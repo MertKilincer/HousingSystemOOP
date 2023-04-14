@@ -91,7 +91,7 @@ public class Plug extends Product implements Switchable {
         if (start==null || end == null){
             return 0;
         }else {
-           return  (Duration.between(this.start, this.end).getSeconds()) / 3600;
+           return  Duration.between(this.start, this.end).getSeconds() / 3600.0;
         }
     }
 

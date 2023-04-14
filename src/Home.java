@@ -88,12 +88,12 @@ public class Home {
         }
     }
 
-    private static Camera getCamera(String[] args) throws Custom {
+    private  Camera getCamera(String[] args) throws Custom {
 
         if (args.length == 4) {
             return new Camera(args[2], Double.parseDouble(args[3]));
         } else if (args.length == 5) {
-            return new Camera(args[2], Double.parseDouble(args[3]), args[4]);
+            return new Camera(args[2], Double.parseDouble(args[3]), args[4],this.getCurrentTime());
         } else {
             throw new Erroneous();
         }
