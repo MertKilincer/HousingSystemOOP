@@ -25,7 +25,7 @@ public class Camera extends Product implements Switchable{
         if (consumptionRate>0){
             this.ConsumptionRate = consumptionRate;
         }else {
-            throw new PositivityError("Camera");
+            throw new PositivityError("Megabyte");
         }
     }
     public double getUsedMemory(){return this.usedMemory;}

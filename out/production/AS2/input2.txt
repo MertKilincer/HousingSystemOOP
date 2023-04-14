@@ -43,7 +43,7 @@ PlugIn	Plug2	-3
 PlugIn	Plug2	10
 PlugIn	Plug2	7
 SetTime	2023-03-31_14:05:00
-
+SetInitialTime	2023-03-31_14:15:00
 Switch	Plug2	Off
 SkipMinutes	5
 Switch	Plug2	On

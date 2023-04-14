@@ -227,6 +227,10 @@ public class Home {
         }
     }
 
+    public void illegalCommand(String [] args) {
+        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
+        this.updateOutput("ERROR: Erroneous command!\n");
+    }
     public void illegalCommand() {
         this.updateOutput("ERROR: Erroneous command!\n");
     }
@@ -375,16 +379,12 @@ public class Home {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
             String name = args[1];
-            if (this.getItemList().containsKey(name)){
-                Product device = this.getItemList().get(name);
 
-                ColorLamp lamp = (ColorLamp) device;
-                lamp.setColorCode(args[2]);
-                replaceProduct(name,lamp);
+            Product device = findDevices(name);
+            ColorLamp lamp = (ColorLamp) device;
+            lamp.setColorCode(args[2]);
+            replaceProduct(name,lamp);
 
-            }else {
-                throw new NotFound();
-            }
         }catch (Custom e){
             this.updateOutput(e.getMessage());
         }catch (ClassCastException e){
@@ -396,15 +396,13 @@ public class Home {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
             String name = args[1];
-            if (this.getItemList().containsKey(name)){
-                Product device = this.getItemList().get(name);
-                Lamp lamp = (Lamp) device;
-                lamp.setWhite(Integer.parseInt(args[2]),Integer.parseInt(args[3]));
-                replaceProduct(name,lamp);
 
-            }else {
-                throw new NotFound();
-            }
+            Product device = findDevices(name);
+            Lamp lamp = (Lamp) device;
+            lamp.setWhite(Integer.parseInt(args[2]),Integer.parseInt(args[3]));
+            replaceProduct(name,lamp);
+
+
         }catch (Custom e){
             this.updateOutput(e.getMessage());
         }catch (ClassCastException e){
@@ -416,15 +414,14 @@ public class Home {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
             String name = args[1];
-            if (this.getItemList().containsKey(name)){
-                Product device = this.getItemList().get(name);
+
+                Product device = findDevices(name);
                 ColorLamp lamp = (ColorLamp) device;
                 lamp.setColor(args[2],Integer.parseInt(args[3]));
                 replaceProduct(name,lamp);
 
-            }else {
-                throw new NotFound();
-            }
+
+
     }catch (Custom e){
         this.updateOutput(e.getMessage());
     }catch (ClassCastException e){
@@ -491,6 +488,7 @@ public class Home {
             throw new NotFound();
         }
     }
+
 
 
 

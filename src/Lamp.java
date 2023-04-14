@@ -41,7 +41,7 @@ public class Lamp extends Product {
         if (kelvin>=2000 && kelvin<=6500){
             this.kelvin=kelvin;
         }else{
-            throw new RangeError("ERROR: Kelvin ","2000K-6500K!\n");
+            throw new RangeError("ERROR: Kelvin value ","2000K-6500K!\n");
         }
     }
     public void setWhite(int kelvin,int brightness) throws Custom {
@@ -68,7 +68,7 @@ public class Lamp extends Product {
 
     @Override
     public String info() {
-        return "Smart Plug " + super.getName() + " is " + super.getStatus().toLowerCase() +
+        return "Smart Lamp " + super.getName() + " is " + super.getStatus().toLowerCase() +
                 " and its kelvin value is " + this.getKelvin() + "K with " + this.getBrightness() + "% brightness" +
                 ", and its time to switch its status is "+ TimeControl.stringFormatter(this.getSwitchTime())+".\n";
     }

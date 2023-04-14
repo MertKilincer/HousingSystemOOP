@@ -17,8 +17,9 @@ public class Main {
                     String[] values = inputs[i].split("\t");
                     switch (values[0]) {
 
-                        case "SetInıtialTime":
-                            //pass
+                        case "SetInitialTime":
+                            home.illegalCommand(values);
+                            break;
                         case "SetTime":
                             home.setTime(values);
                             break;

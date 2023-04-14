@@ -1,6 +1,6 @@
 public class StatusError extends Custom{
 
     public StatusError(String status) {
-        super("ERROR: This device is already switched "+status+"!\n");
+        super("ERROR: This device is already switched "+status.toLowerCase()+"!\n");
     }
 }

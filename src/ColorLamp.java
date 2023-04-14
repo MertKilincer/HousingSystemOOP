@@ -35,7 +35,7 @@ public class ColorLamp extends Lamp{
             if (number<=0xFFFFFF&&number>=0x000000){
                 this.colorCode = colorCode;
             }else{
-                throw new RangeError("ERROR: Color code ","0x0-0xFFFFFF!\n");
+                throw new RangeError("ERROR: Color code value ","0x0-0xFFFFFF!\n");
             }
         }else{
             throw new Erroneous();
