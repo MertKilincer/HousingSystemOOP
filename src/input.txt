@@ -1,0 +1,14 @@
+SetInitialTime	2023-03-31_14:00:15
+SetTime	2023-03-31_14:05:00
+SkipMinutes	30
+Add	SmartPlug	Plug1
+Switch	Plug1	On
+PlugIn	Plug1	5
+PlugIn	Plug1	5
+PlugIn	Plug2	5
+SkipMinutes	15
+PlugOut	Plug1
+SkipMinutes	10
+Switch	Plug1	Off
+Switch	Plug1	Off
+ZReport
