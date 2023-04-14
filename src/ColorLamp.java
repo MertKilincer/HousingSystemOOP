@@ -58,7 +58,7 @@ public class ColorLamp extends Lamp{
 
     @Override
     public String info() {
-        return "Smart Color Lamp" + super.getName() + " is " + super.getStatus().toLowerCase() +
+        return "Smart Color Lamp " + super.getName() + " is " + super.getStatus().toLowerCase() +
                 " and its color value is " + this.getKelvin() + "K with " + this.getBrightness() + "% brightness" +
                 ", and its time to switch its status is "+ TimeControl.stringFormatter(this.getSwitchTime())+".\n";
     }

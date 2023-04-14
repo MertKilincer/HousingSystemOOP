@@ -9,7 +9,7 @@ public class Home {
 
     public Map<String, Product> itemList = new LinkedHashMap<>();
 
-    public ArrayList<Product> deviceList = new ArrayList<>();
+    public LinkedList<Product> deviceList = new LinkedList<>();
     public String output = new String();
     public ArrayList<LocalDateTime> switchlist = new ArrayList<>();
 
@@ -23,7 +23,7 @@ public class Home {
         return this.itemList;
     }
 
-    public ArrayList<Product> getDeviceList(){return this.deviceList;}
+    public LinkedList<Product> getDeviceList(){return this.deviceList;}
 
     public String getOutput() {
         return this.output;
@@ -63,13 +63,13 @@ public class Home {
                     device = getColorLamp(input);
                     break;
             }
-            String keyName = input[2];
-            if (!this.getItemList().containsKey(keyName)) {
-                this.getItemList().put(keyName, device);
-
-            } else {
+            String Name = input[2];
+            if (!checkDevices(Name)){
+                this.getDeviceList().add(device);
+            }else {
                 throw new NameError();
             }
+
         } catch (Custom e) {
             this.updateOutput(e.getMessage());
         }
@@ -131,7 +131,7 @@ public class Home {
         ArrayList<LocalDateTime> temp1 = new ArrayList<>();
         for (LocalDateTime i : this.getSwitchlist()) {
             if (i.isBefore(this.getCurrentTime()) || i.isEqual(this.getCurrentTime())) {
-                NopDoSwitch(this.getItemList(), i);
+                NopDoSwitch(i);
                 temp1.add(i);
             }
         }
@@ -140,14 +140,12 @@ public class Home {
         }
     }
 
-    public void NopDoSwitch(Map<String, Product> items, LocalDateTime switchTime) {
-        for (Map.Entry<String, Product> set :
-                items.entrySet()) {
+    public void NopDoSwitch(LocalDateTime switchTime) {
+        for (Product p : this.getDeviceList()){
             try {
-                Product device = set.getValue();
-                if (device.getSwitchTime().equals(switchTime)) {
-                    device.nopSwitch(switchTime);
-                    device.resetSwitchTime();
+                if (p.getSwitchTime().equals(switchTime)) {
+                    p.nopSwitch(switchTime);
+                    p.resetSwitchTime();
                 }
             } catch (NullPointerException e) {
             } catch (Custom e) {
@@ -161,12 +159,10 @@ public class Home {
         try {
             String name = args[1];
             double Ampere = Double.parseDouble(args[2]);
-            if (this.getItemList().containsKey(args[1])){
-                Plug temp = (Plug) this.getItemList().get(name);
-                temp.PlugIn(Ampere, this.getCurrentTime());
-            }else {
-                throw new NotFound();
-            }
+            Product device =findDevices(name);
+            Plug plug = (Plug) device;
+            plug.PlugIn(Ampere, this.getCurrentTime());
+            replaceProduct(name,plug);
 
         }catch (NullPointerException e) {
             this.updateOutput("null");
@@ -184,12 +180,10 @@ public class Home {
         try {
 
             String name = args[1];
-            if (this.getItemList().containsKey(args[1])){
-                Plug temp = (Plug) this.getItemList().get(name);
-                temp.PlugOff(this.getCurrentTime());
-                }else {
-                    throw new NotFound();
-                }
+            Product device =findDevices(name);
+            Plug temp = (Plug) device;
+            temp.PlugOff(this.getCurrentTime());
+            replaceProduct(name,temp);
 
         }catch (NullPointerException e) {
         } catch (Custom e) {
@@ -202,18 +196,18 @@ public class Home {
     public void Switch(String name, String status) {
         this.updateOutput("COMMAND: Switch\t" + name + "\t" + status + "\n");
         try {
-        for (Map.Entry<String, Product> set :
-                this.getItemList().entrySet()) {
-                Product device = set.getValue();
-                String key =set.getKey();
-                if (device instanceof Lamp && key.equals(name)) {
+
+                Product device = findDevices(name);
+                if (device instanceof Lamp && device.getName().equals(name)) {
                     device.switchDevice(status);
+                    replaceProduct(name,device);
                 } else if (device.getName().equals(name)) {
                     Switchable switchableDevice = (Switchable) device;
                     switchableDevice.switchDevice(this.getCurrentTime(), status);
+                    replaceProduct(name, (Product) switchableDevice);
                 }
 
-            }
+
         }catch (NullPointerException e) {
 
         } catch (Custom e) {
@@ -226,7 +220,7 @@ public class Home {
         this.updateOutput("COMMAND: Nop\n");
         if (!(this.getSwitchlist().size() == 0)) {
             this.getTimeControl().setTime(this.getSwitchlist().get(0));
-            this.NopDoSwitch(this.getItemList(), this.getSwitchlist().get(0));
+            this.NopDoSwitch(this.getSwitchlist().get(0));
             this.getSwitchlist().remove(getSwitchlist().get(0));
         } else {
             this.updateOutput("ERROR: There is nothing to switch!\n");
@@ -256,62 +250,63 @@ public class Home {
     }
 
     public void setSwitchTime(String[] args) {
-        LocalDateTime TimeofSwitch = TimeControl.TimeFormatter(args[2]);
-        this.getItemList().get(args[1]).setSwitchTime(TimeofSwitch);
-        if (!(this.getSwitchlist().contains(TimeofSwitch))) {
-            this.getSwitchlist().add(TimeofSwitch);
-        }
-        Collections.sort(this.getSwitchlist());
         this.updateOutput("COMMAND: SetSwitchTime\t" + args[1] + "\t" + args[2] + "\n");
+        try {
+            String name = args [1];
+            String timeString = args[2];
+            Product device = findDevices(name);
+            LocalDateTime TimeOfSwitch = TimeControl.TimeFormatter(timeString);
+            device.setSwitchTime(TimeOfSwitch);
+            replaceProduct(name,device);
+            if (!(this.getSwitchlist().contains(TimeOfSwitch))) {
+                this.getSwitchlist().add(TimeOfSwitch);
+            }
+            Collections.sort(this.getSwitchlist());
+
+        }catch (Custom e){
+            this.updateOutput(e.getMessage());
+        }
+
     }
 
 
     public void ZReport() {
-        ArrayList<Map.Entry<String, Product>> list = new ArrayList<>(this.getItemList().entrySet());
-        Comparator<Map.Entry<String, Product>> comparator = new Comparator<Map.Entry<String, Product>>() {
-            @Override
-            public int compare(Map.Entry<String, Product> e1, Map.Entry<String, Product> e2) {
-                LocalDateTime d1 = e1.getValue().getSwitchTime();
-                LocalDateTime d2 = e2.getValue().getSwitchTime();
-                if (d1 == null && d2 == null) {
-                    return 0; // both are null, equal
-                } else if (d1 == null) {
-                    return 1; // e1 is null, e2 is not null, e2 comes first
-                } else if (d2 == null) {
-                    return -1; // e1 is not null, e2 is null, e1 comes first
-                } else {
-                    return d1.compareTo(d2); // both are not null, compare their values
-                }
-            }
-        };
+        //ArrayList<Map.Entry<String, Product>> list = new ArrayList<>(this.getItemList().entrySet());
+        //Comparator<Map.Entry<String, Product>> comparator = new Comparator<Map.Entry<String, Product>>() {
+           // @Override
+            //public int compare(Map.Entry<String, Product> e1, Map.Entry<String, Product> e2) {
+               // LocalDateTime d1 = e1.getValue().getSwitchTime();
+                //LocalDateTime d2 = e2.getValue().getSwitchTime();
+                //if (d1 == null && d2 == null) {
+                //    return 0; // both are null, equal
+                //} else if (d1 == null) {
+                //    return 1; // e1 is null, e2 is not null, e2 comes first
+               /// } else if (d2 == null) {
+                   // return -1; // e1 is not null, e2 is null, e1 comes first
+                //} else {
+                  //  return d1.compareTo(d2); // both are not null, compare their values
+                //}////
+            //}
+        //};
         this.updateOutput("COMMAND: ZReport\nTime is:\t" + TimeControl.stringFormatter(this.getCurrentTime()) + "\n");
-        Collections.sort(list, Comparator.nullsLast(comparator));
-        for (Map.Entry<String, Product> entry : list) {
-            this.updateOutput(entry.getValue().info());
+        //Collections.sort(list, Comparator.nullsLast(comparator));
+        for (Product p : this.getDeviceList()) {
+            this.updateOutput(p.info());
         }
 
     }
 
     public void removeDevice(String[] args) {
+        this.updateOutput("COMMAND: Remove\t"+args[1]+"\n");
         try {
             if (args.length == 2) {
-                boolean flag = true;
-                for (Map.Entry<String, Product> set :
-                        this.getItemList().entrySet()) {
-                    if (set.getValue().getName().equals(args[1])) {
-                        this.updateOutput("COMMAND: Remove\t"+args[1]+
-                                "\nSUCCESS: Information about removed smart device is as follows:\n"+
-                                set.getValue().info());
-                                this.getItemList().remove(args[1]);
-                                flag = true;
-                                break;
-                    } else {
-                        flag = false;
-                    }
-                }
-                if (!flag){
-                    throw new NotFound();
-                }
+                String name =args[1];
+                Product device =findDevices(name);
+                this.updateOutput("SUCCESS: Information about removed smart device is as follows:\n"
+                        +device.info());
+
+                this.getDeviceList().remove(device);
+
             } else {
                 throw new Erroneous();
             }
@@ -324,14 +319,11 @@ public class Home {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
             String name = args[1];
-            if (this.getItemList().containsKey(name)){
-                Product device = this.getItemList().get(name);
 
-                Lamp lamp = (Lamp) device;
-                lamp.setKelvin(Integer.parseInt(args[2]));
-                }else {
-                    throw new NotFound();
-                }
+            Product device = findDevices(name);
+            Lamp lamp = (Lamp) device;
+            lamp.setKelvin(Integer.parseInt(args[2]));
+            replaceProduct(name,lamp);
 
         }catch (Custom e){
             this.updateOutput(e.getMessage());
@@ -344,14 +336,10 @@ public class Home {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
             String name = args[1];
-            if (this.getItemList().containsKey(name)){
-                Product device = this.getItemList().get(name);
-
-                Lamp lamp = (Lamp) device;
-                lamp.setBrightness(Integer.parseInt(args[2]));
-            }else {
-                throw new NotFound();
-            }
+            Product device = findDevices(name);
+            Lamp lamp = (Lamp) device;
+            lamp.setBrightness(Integer.parseInt(args[2]));
+            replaceProduct(name,lamp);
 
         }catch (Custom e){
             this.updateOutput(e.getMessage());
@@ -370,6 +358,8 @@ public class Home {
 
                 ColorLamp lamp = (ColorLamp) device;
                 lamp.setColorCode(args[2]);
+                replaceProduct(name,lamp);
+
             }else {
                 throw new NotFound();
             }
@@ -388,6 +378,8 @@ public class Home {
                 Product device = this.getItemList().get(name);
                 Lamp lamp = (Lamp) device;
                 lamp.setWhite(Integer.parseInt(args[2]),Integer.parseInt(args[3]));
+                replaceProduct(name,lamp);
+
             }else {
                 throw new NotFound();
             }
@@ -406,6 +398,8 @@ public class Home {
                 Product device = this.getItemList().get(name);
                 ColorLamp lamp = (ColorLamp) device;
                 lamp.setColor(args[2],Integer.parseInt(args[3]));
+                replaceProduct(name,lamp);
+
             }else {
                 throw new NotFound();
             }
@@ -423,11 +417,14 @@ public class Home {
                 if (!(args.length == 3)) {
                     throw new Erroneous();
                 }
+                String oldName = args [1];
+                String newName = args [2];
+                if (!(checkDevices(newName))) {
 
-                if (!(this.getItemList().containsKey(args[2]))) {
-                    this.getItemList().get(args[1]).setName(args[2]);
-                    Product alteredDevice = this.getItemList().remove(args[1]);
-                    this.getItemList().put(args[2], alteredDevice);
+                    Product device = findDevices(oldName);
+                    device.setName(newName);
+                    replaceProduct(oldName,device);
+
                 } else {
                     throw new NameError();
                 }
@@ -436,6 +433,40 @@ public class Home {
             }
         } catch (Custom e){
             this.updateOutput(e.getMessage());
+        }
+    }
+
+
+    public Product findDevices(String name) throws Custom {
+
+            for (Product p : this.getDeviceList()) {
+                if (p.getName().equals(name)) {
+                    return p;
+                }
+        }
+        throw new NotFound();
+    }
+    public boolean checkDevices(String name){
+        for (Product p : this.getDeviceList()) {
+            if (p.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public void replaceProduct(String name, Product newProduct) throws NotFound {
+        int index = -1;
+        for (int i = 0; i < this.getDeviceList().size(); i++) {
+            Product p = this.getDeviceList().get(i);
+            if (p.getName().equals(name)) {
+                index = i;
+                break;
+            }
+        }
+        if (index != -1) {
+            this.getDeviceList().set(index, newProduct);
+        } else {
+            throw new NotFound();
         }
     }
 
