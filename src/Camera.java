@@ -74,7 +74,7 @@ public class Camera extends Product implements Switchable{
     @Override
     public String info() {
         return  "Smart Camera "+ super.getName() +
-                " is " +super.getStatus()+ " and used "+
+                " is " +super.getStatus().toLowerCase()+ " and used "+
                 this.getUsedMemory()+" MB of storage so far (excluding current status), " +
                 "and its time to switch its status is " +TimeControl.stringFormatter(super.getSwitchTime())+".\n";
     }

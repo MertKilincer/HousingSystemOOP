@@ -5,6 +5,8 @@ public abstract class Product {
     private String status;
     private LocalDateTime switchTime;
 
+    public LocalDateTime lastswitchtime;
+
     public Product(String name) {
         this.name = name;
         this.status = "Off";
@@ -39,12 +41,17 @@ public abstract class Product {
         }
     }
 
+
+
     public void setSwitchTime(LocalDateTime switchTime) {
         this.switchTime = switchTime;
     }
 
     public LocalDateTime getSwitchTime() {
-        return switchTime;
+        return this.switchTime;
+    }
+    public LocalDateTime getLastswitchtime() {
+        return this.lastswitchtime;
     }
 
     public String getName(){
@@ -53,6 +60,7 @@ public abstract class Product {
 
     public void setName(String name){ this.name=name;}
     public void resetSwitchTime(){
+        this.lastswitchtime =this.getSwitchTime();
         this.switchTime = null;
     }
 

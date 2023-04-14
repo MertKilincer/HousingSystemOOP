@@ -55,7 +55,7 @@ public class Plug extends Product implements Switchable {
         return  "Smart Plug " + super.getName() + " is " + super.getStatus().toLowerCase() +
                 " and consumed " + String.format("%.2f", this.consumption) +
                 "W so far (excluding current device), and " +
-                "its time to switch its status is " + this.getSwitchTime()+".\n";
+                "its time to switch its status is " + TimeControl.stringFormatter(this.getSwitchTime())+".\n";
     }
 
     public void PlugIn(double ampere, LocalDateTime time) throws Custom {

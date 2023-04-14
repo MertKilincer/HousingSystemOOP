@@ -238,11 +238,18 @@ public class Home {
     }
 
     public void setTime(String [] args) {
+
         try {
             LocalDateTime setTime = TimeControl.TimeFormatter(args[1]);
-            this.getTimeControl().setTime(setTime);
-            this.doSwitches();
             this.updateOutput("COMMAND: SetTime	" + TimeControl.stringFormatter(setTime) + "\n");
+            if (setTime.isBefore(this.getCurrentTime())){
+                this.updateOutput("ERROR: Time cannot be reversed!\n");
+            }else {
+                this.getTimeControl().setTime(setTime);
+                this.doSwitches();
+            }
+
+
         }catch (DateTimeException e){
             this.updateOutput("ERROR: Time format is not correct!\n");
         }
@@ -271,30 +278,45 @@ public class Home {
 
 
     public void ZReport() {
-        //ArrayList<Map.Entry<String, Product>> list = new ArrayList<>(this.getItemList().entrySet());
-        //Comparator<Map.Entry<String, Product>> comparator = new Comparator<Map.Entry<String, Product>>() {
-           // @Override
-            //public int compare(Map.Entry<String, Product> e1, Map.Entry<String, Product> e2) {
-               // LocalDateTime d1 = e1.getValue().getSwitchTime();
-                //LocalDateTime d2 = e2.getValue().getSwitchTime();
-                //if (d1 == null && d2 == null) {
-                //    return 0; // both are null, equal
-                //} else if (d1 == null) {
-                //    return 1; // e1 is null, e2 is not null, e2 comes first
-               /// } else if (d2 == null) {
-                   // return -1; // e1 is not null, e2 is null, e1 comes first
-                //} else {
-                  //  return d1.compareTo(d2); // both are not null, compare their values
-                //}////
-            //}
-        //};
+        
+            
         this.updateOutput("COMMAND: ZReport\nTime is:\t" + TimeControl.stringFormatter(this.getCurrentTime()) + "\n");
-        //Collections.sort(list, Comparator.nullsLast(comparator));
+
+        Collections.sort(this.getDeviceList(), new ProductSwitchTimeComparator());
         for (Product p : this.getDeviceList()) {
             this.updateOutput(p.info());
         }
 
     }
+
+
+    public class ProductSwitchTimeComparator implements Comparator<Product> {
+        @Override
+        public int compare(Product p1, Product p2) {
+            LocalDateTime d1 = p1.getSwitchTime();
+            LocalDateTime d2 =p2.getSwitchTime();
+            LocalDateTime l1 =p1.getLastswitchtime();
+            LocalDateTime l2 =p2.getLastswitchtime();
+            if (d1 == null && d2 == null) {
+                if (l1==null && l2 == null){
+                    return 0; // both are null, equal
+                } else if (l1==null) {
+                    return 1;
+                } else if (l2==null) {
+                    return -1;
+                } else{
+                    return l2.compareTo(l1);
+                }
+            } else if (d1 == null) {
+                return 1; // e1 is null, e2 is not null, e2 comes first
+            } else if (d2 == null) {
+                return -1; // e1 is not null, e2 is null, e1 comes first
+            } else {
+                return d1.compareTo(d2); // both are not null, compare their values in reverse order
+            }
+        }
+    }
+
 
     public void removeDevice(String[] args) {
         this.updateOutput("COMMAND: Remove\t"+args[1]+"\n");
