@@ -27,9 +27,9 @@ public class Plug extends Product implements Switchable {
         }
     }
 
-    public Plug(String name, String status, double Ampere) throws Custom {
+    public Plug(String name, String status, double Ampere,LocalDateTime start) throws Custom {
         super(name, status);
-        setAmpere(Ampere);
+        PlugIn(Ampere,start);
     }
 
 

@@ -1,11 +1,11 @@
 import java.io.FileWriter;
+
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        String[] inputs = ReadInputFile.readFile("input2.txt");
+    public static void main(String[] args)  {
+        String[] inputs = ReadInputFile.readFile("input6.txt");
         Home home = new Home();
         inputs = Arrays.stream(inputs).filter(s -> !s.isEmpty()).toArray(String[]::new);
 
@@ -17,9 +17,6 @@ public class Main {
                     String[] values = inputs[i].split("\t");
                     switch (values[0]) {
 
-                        case "SetInitialTime":
-                            home.illegalCommand(values);
-                            break;
                         case "SetTime":
                             home.setTime(values);
                             break;
@@ -51,10 +48,10 @@ public class Main {
                             home.setColor(values);
                             break;
                         case "PlugIn":
-                            home.PlugIn(values);
+                            home.plugIn(values);
                             break;
                         case "PlugOut":
-                            home.PlugOut(values);
+                            home.plugOut(values);
                             break;
                         case "Remove":
                             home.removeDevice(values);
@@ -63,31 +60,43 @@ public class Main {
                             home.changeName(values);
                             break;
                         case "Switch":
-                            home.Switch(values[1],values[2]);
+                            home.switchCommand(values[1],values[2]);
                             break;
                         case "ZReport":
-                            home.ZReport();
+                            home.zReport(false);
                             break;
+                        case "SetInitialTime":
                         default:
-                            home.illegalCommand();
+                            home.illegalCommand(values);
                             break;
                     }
 
                     }
-                if (!(inputs[inputs.length-1].equals("ZReport"))){
-                    home.ZReport();
-                }
-                FileWriter writer = new FileWriter("output.txt");
-                writer.write(home.getOutput());
-                writer.close();
+
 
 
             } else {
-
+                home.illegalStart(inputs[0]);
+            }
+            if (!(inputs[inputs.length-1].equals("ZReport"))){
+                home.zReport(true);
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+
+
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            home.illegalStart(inputs[0]);
+
+        }finally {
+            try {
+                FileWriter writer = new FileWriter("output.txt");
+                writer.write(home.getOutput());
+                writer.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
         }
     }
 }

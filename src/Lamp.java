@@ -28,11 +28,14 @@ public class Lamp extends Product {
     }
 
 
-    public void setBrightness(int brightness) throws RangeError {
-        if (!(brightness<0 ||brightness>100)){
-            this.brightness = brightness;
+    public void setBrightness(int brightness) throws Custom {
+        checkBrigtness(brightness);
+        this.brightness = brightness;
         }
-        else{
+
+
+    public static void checkBrigtness(int brightness) throws Custom{
+        if (brightness<0 ||brightness>100){
             throw new RangeError("ERROR: Brightness ", "0%-100%!\n");
         }
     }

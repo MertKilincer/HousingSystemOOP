@@ -7,8 +7,6 @@ public class Home {
 
     public TimeControl factoryTime;
 
-    public Map<String, Product> itemList = new LinkedHashMap<>();
-
     public LinkedList<Product> deviceList = new LinkedList<>();
     public String output = new String();
     public ArrayList<LocalDateTime> switchlist = new ArrayList<>();
@@ -19,9 +17,6 @@ public class Home {
                 "\nSUCCESS: Time has been set to " + timeString + "!\n");
     }
 
-    public Map<String, Product> getItemList() {
-        return this.itemList;
-    }
 
     public LinkedList<Product> getDeviceList(){return this.deviceList;}
 
@@ -75,14 +70,14 @@ public class Home {
         }
     }
 
-    private static Plug getPlug(String[] args) throws Custom {
+    private  Plug getPlug(String[] args) throws Custom {
 
         if (args.length == 3) {
             return new Plug(args[2]);
         } else if (args.length == 4) {
             return new Plug(args[2], args[3]);
         } else if (args.length == 5) {
-            return new Plug(args[2], args[3], Double.parseDouble(args[4]));
+            return new Plug(args[2], args[3], Double.parseDouble(args[4]),this.getCurrentTime());
         } else {
             throw new Erroneous();
         }
@@ -98,7 +93,6 @@ public class Home {
             throw new Erroneous();
         }
     }
-
 
     private static Lamp getLamp(String[] args) throws Custom {
         if (args.length == 3) {
@@ -126,35 +120,7 @@ public class Home {
         }
     }
 
-
-    public void doSwitches() {
-        ArrayList<LocalDateTime> temp1 = new ArrayList<>();
-        for (LocalDateTime i : this.getSwitchlist()) {
-            if (i.isBefore(this.getCurrentTime()) || i.isEqual(this.getCurrentTime())) {
-                NopDoSwitch(i);
-                temp1.add(i);
-            }
-        }
-        for (LocalDateTime j : temp1) {
-            this.getSwitchlist().remove(j);
-        }
-    }
-
-    public void NopDoSwitch(LocalDateTime switchTime) {
-        for (Product p : this.getDeviceList()){
-            try {
-                if (p.getSwitchTime().equals(switchTime)) {
-                    p.nopSwitch(switchTime);
-                    p.resetSwitchTime();
-                }
-            } catch (NullPointerException e) {
-            } catch (Custom e) {
-                this.updateOutput(e.getMessage());
-            }
-        }
-    }
-
-    public void PlugIn(String[] args) {
+    public void plugIn(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
             String name = args[1];
@@ -175,7 +141,7 @@ public class Home {
         }
     }
 
-    public void PlugOut(String [] args) {
+    public void plugOut(String [] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
 
@@ -192,155 +158,6 @@ public class Home {
             this.updateOutput("ERROR: This device is not a smart plug!\n");
         }
     }
-
-    public void Switch(String name, String status) {
-        this.updateOutput("COMMAND: Switch\t" + name + "\t" + status + "\n");
-        try {
-
-                Product device = findDevices(name);
-                if (device instanceof Lamp && device.getName().equals(name)) {
-                    device.switchDevice(status);
-                    replaceProduct(name,device);
-                } else if (device.getName().equals(name)) {
-                    Switchable switchableDevice = (Switchable) device;
-                    switchableDevice.switchDevice(this.getCurrentTime(), status);
-                    replaceProduct(name, (Product) switchableDevice);
-                }
-
-
-        }catch (NullPointerException e) {
-
-        } catch (Custom e) {
-            this.updateOutput(e.getMessage());
-        }
-    }
-
-
-    public void nop() {
-        this.updateOutput("COMMAND: Nop\n");
-        if (!(this.getSwitchlist().size() == 0)) {
-            this.getTimeControl().setTime(this.getSwitchlist().get(0));
-            this.NopDoSwitch(this.getSwitchlist().get(0));
-            this.getSwitchlist().remove(getSwitchlist().get(0));
-        } else {
-            this.updateOutput("ERROR: There is nothing to switch!\n");
-        }
-    }
-
-    public void illegalCommand(String [] args) {
-        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
-        this.updateOutput("ERROR: Erroneous command!\n");
-    }
-    public void illegalCommand() {
-        this.updateOutput("ERROR: Erroneous command!\n");
-    }
-
-    public void skipMinutes(String[] args) {
-        this.getTimeControl().skipMinutes(args[1]);
-        this.doSwitches();
-        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
-    }
-
-    public void setTime(String [] args) {
-
-        try {
-            LocalDateTime setTime = TimeControl.TimeFormatter(args[1]);
-            this.updateOutput("COMMAND: SetTime	" + TimeControl.stringFormatter(setTime) + "\n");
-            if (setTime.isBefore(this.getCurrentTime())){
-                this.updateOutput("ERROR: Time cannot be reversed!\n");
-            }else {
-                this.getTimeControl().setTime(setTime);
-                this.doSwitches();
-            }
-
-
-        }catch (DateTimeException e){
-            this.updateOutput("ERROR: Time format is not correct!\n");
-        }
-
-    }
-
-    public void setSwitchTime(String[] args) {
-        this.updateOutput("COMMAND: SetSwitchTime\t" + args[1] + "\t" + args[2] + "\n");
-        try {
-            String name = args [1];
-            String timeString = args[2];
-            Product device = findDevices(name);
-            LocalDateTime TimeOfSwitch = TimeControl.TimeFormatter(timeString);
-            device.setSwitchTime(TimeOfSwitch);
-            replaceProduct(name,device);
-            if (!(this.getSwitchlist().contains(TimeOfSwitch))) {
-                this.getSwitchlist().add(TimeOfSwitch);
-            }
-            Collections.sort(this.getSwitchlist());
-
-        }catch (Custom e){
-            this.updateOutput(e.getMessage());
-        }
-
-    }
-
-
-    public void ZReport() {
-        
-            
-        this.updateOutput("COMMAND: ZReport\nTime is:\t" + TimeControl.stringFormatter(this.getCurrentTime()) + "\n");
-
-        Collections.sort(this.getDeviceList(), new ProductSwitchTimeComparator());
-        for (Product p : this.getDeviceList()) {
-            this.updateOutput(p.info());
-        }
-
-    }
-
-
-    public class ProductSwitchTimeComparator implements Comparator<Product> {
-        @Override
-        public int compare(Product p1, Product p2) {
-            LocalDateTime d1 = p1.getSwitchTime();
-            LocalDateTime d2 =p2.getSwitchTime();
-            LocalDateTime l1 =p1.getLastswitchtime();
-            LocalDateTime l2 =p2.getLastswitchtime();
-            if (d1 == null && d2 == null) {
-                if (l1==null && l2 == null){
-                    return 0; // both are null, equal
-                } else if (l1==null) {
-                    return 1;
-                } else if (l2==null) {
-                    return -1;
-                } else{
-                    return l2.compareTo(l1);
-                }
-            } else if (d1 == null) {
-                return 1; // e1 is null, e2 is not null, e2 comes first
-            } else if (d2 == null) {
-                return -1; // e1 is not null, e2 is null, e1 comes first
-            } else {
-                return d1.compareTo(d2); // both are not null, compare their values in reverse order
-            }
-        }
-    }
-
-
-    public void removeDevice(String[] args) {
-        this.updateOutput("COMMAND: Remove\t"+args[1]+"\n");
-        try {
-            if (args.length == 2) {
-                String name =args[1];
-                Product device =findDevices(name);
-                this.updateOutput("SUCCESS: Information about removed smart device is as follows:\n"
-                        +device.info());
-
-                this.getDeviceList().remove(device);
-
-            } else {
-                throw new Erroneous();
-            }
-        } catch (Custom e) {
-            this.updateOutput(e.getMessage());
-        }
-    }
-
     public void setKelvin(String[] args){
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
@@ -415,43 +232,233 @@ public class Home {
         try {
             String name = args[1];
 
-                Product device = findDevices(name);
-                ColorLamp lamp = (ColorLamp) device;
-                lamp.setColor(args[2],Integer.parseInt(args[3]));
-                replaceProduct(name,lamp);
+            Product device = findDevices(name);
+            ColorLamp lamp = (ColorLamp) device;
+            lamp.setColor(args[2],Integer.parseInt(args[3]));
+            replaceProduct(name,lamp);
 
 
 
-    }catch (Custom e){
-        this.updateOutput(e.getMessage());
-    }catch (ClassCastException e){
-        this.updateOutput("ERROR: This device is not a smart color lamp!\n");
+        }catch (Custom e){
+            this.updateOutput(e.getMessage());
+        }catch (ClassCastException e){
+            this.updateOutput("ERROR: This device is not a smart color lamp!\n");
+        }
+
     }
 
-}
-    public void changeName(String [] args){
+    public void switchCommand(String name, String status) {
+        this.updateOutput("COMMAND: Switch\t" + name + "\t" + status + "\n");
+        try {
+
+                Product device = findDevices(name);
+                if (device instanceof Lamp && device.getName().equals(name)) {
+                    device.switchDevice(status);
+                    replaceProduct(name,device);
+                } else if (device.getName().equals(name)) {
+                    Switchable switchableDevice = (Switchable) device;
+                    switchableDevice.switchDevice(this.getCurrentTime(), status);
+                    replaceProduct(name, (Product) switchableDevice);
+                }
+
+
+        }catch (NullPointerException e) {
+
+        } catch (Custom e) {
+            this.updateOutput(e.getMessage());
+        }
+    }
+
+
+    public void doSwitches() {
+        ArrayList<LocalDateTime> temp1 = new ArrayList<>();
+        for (LocalDateTime i : this.getSwitchlist()) {
+            if (i.isBefore(this.getCurrentTime()) || i.isEqual(this.getCurrentTime())) {
+                nopDoSwitch(i);
+                temp1.add(i);
+            }
+        }
+        for (LocalDateTime j : temp1) {
+            this.getSwitchlist().remove(j);
+        }
+    }
+
+    public void nopDoSwitch(LocalDateTime switchTime) {
+        for (Product p : this.getDeviceList()){
+            try {
+                if (p.getSwitchTime().equals(switchTime)) {
+                    p.nopSwitch(switchTime);
+                    p.resetSwitchTime();
+                }
+            } catch (NullPointerException e) {
+            } catch (Custom e) {
+                this.updateOutput(e.getMessage());
+            }
+        }
+    }
+
+
+    public void nop() {
+        this.updateOutput("COMMAND: Nop\n");
+        if (!(this.getSwitchlist().size() == 0)) {
+            this.getTimeControl().setTime(this.getSwitchlist().get(0));
+            this.nopDoSwitch(this.getSwitchlist().get(0));
+            this.getSwitchlist().remove(getSwitchlist().get(0));
+        } else {
+            this.updateOutput("ERROR: There is nothing to switch!\n");
+        }
+    }
+
+
+    public void skipMinutes(String[] args) {
+        this.getTimeControl().skipMinutes(args[1]);
+        this.doSwitches();
+        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
+    }
+
+    public void setTime(String [] args) {
+        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
+        try {
+            LocalDateTime setTime = TimeControl.TimeFormatter(args[1]);
+
+            if (setTime.isBefore(this.getCurrentTime())){
+                this.updateOutput("ERROR: Time cannot be reversed!\n");
+            }else {
+                this.getTimeControl().setTime(setTime);
+                this.doSwitches();
+            }
+
+
+        }catch (DateTimeException e){
+
+            this.updateOutput("ERROR: Time format is not correct!\n");
+        }
+
+    }
+
+    public void setSwitchTime(String[] args) {
+        this.updateOutput("COMMAND: SetSwitchTime\t" + args[1] + "\t" + args[2] + "\n");
+        try {
+            String name = args [1];
+            String timeString = args[2];
+            Product device = findDevices(name);
+            LocalDateTime TimeOfSwitch = TimeControl.TimeFormatter(timeString);
+            device.setSwitchTime(TimeOfSwitch);
+            replaceProduct(name,device);
+            if (!(this.getSwitchlist().contains(TimeOfSwitch))) {
+                this.getSwitchlist().add(TimeOfSwitch);
+            }
+            Collections.sort(this.getSwitchlist());
+
+        }catch (Custom e){
+            this.updateOutput(e.getMessage());
+        }
+
+    }
+
+    public class ProductSwitchTimeComparator implements Comparator<Product> {
+        @Override
+        public int compare(Product p1, Product p2) {
+            LocalDateTime d1 = p1.getSwitchTime();
+            LocalDateTime d2 =p2.getSwitchTime();
+            LocalDateTime l1 =p1.getLastswitchtime();
+            LocalDateTime l2 =p2.getLastswitchtime();
+            if (d1 == null && d2 == null) {
+                if (l1==null && l2 == null){
+                    return 0; // both are null, equal
+                } else if (l1==null) {
+                    return 1;
+                } else if (l2==null) {
+                    return -1;
+                } else{
+                    return l2.compareTo(l1);
+                }
+            } else if (d1 == null) {
+                return 1; // e1 is null, e2 is not null, e2 comes first
+            } else if (d2 == null) {
+                return -1; // e1 is not null, e2 is null, e1 comes first
+            } else {
+                return d1.compareTo(d2); // both are not null, compare their values in reverse order
+            }
+        }
+    }
+
+    public void zReport(boolean lastReport) {
+        
+         if (lastReport) {
+             this.updateOutput("ZReport:\nTime is:\t" + TimeControl.stringFormatter(this.getCurrentTime()) + "\n");
+         }else {
+             this.updateOutput("COMMAND: ZReport\nTime is:\t" + TimeControl.stringFormatter(this.getCurrentTime()) + "\n");
+         }
+
+        Collections.sort(this.getDeviceList(), new ProductSwitchTimeComparator());
+        for (Product p : this.getDeviceList()) {
+            this.updateOutput(p.info());
+        }
+
+    }
+
+
+    public void removeDevice(String[] args) {
+        this.updateOutput("COMMAND: Remove\t"+args[1]+"\n");
+        try {
+            if (args.length == 2) {
+                String name =args[1];
+                Product device =findDevices(name);
+
+                if (device.getStatus().equals("On")){
+                    if (device instanceof Lamp){
+                        device.switchDevice("Off");
+                        replaceProduct(name,device);
+                    }else {
+                        Switchable switchableDevice = (Switchable) device;
+                        switchableDevice.switchDevice(this.getCurrentTime(), "Off");
+                        replaceProduct(name, (Product) switchableDevice);
+                    }
+                }
+                this.updateOutput("SUCCESS: Information about removed smart device is as follows:\n"
+                        +device.info());
+
+                this.getDeviceList().remove(device);
+
+            } else {
+                throw new Erroneous();
+            }
+        } catch (Custom e) {
+            this.updateOutput(e.getMessage());
+        }
+    }
+
+
+    public void changeName(String [] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
             try {
+
                 if (!(args.length == 3)) {
                     throw new Erroneous();
                 }
-                String oldName = args [1];
-                String newName = args [2];
+
+                String oldName = args[1];
+                String newName = args[2];
+                if (oldName.equals(newName)) {
+                    throw new SameArgument();
+                }
                 if (!(checkDevices(newName))) {
 
                     Product device = findDevices(oldName);
                     device.setName(newName);
-                    replaceProduct(oldName,device);
+                    replaceProduct(newName, device);
 
                 } else {
                     throw new NameError();
                 }
-            }catch (NullPointerException e) {
-                throw new NotFound();
+
+            } catch (Custom e) {
+                this.updateOutput(e.getMessage());
             }
-        } catch (Custom e){
-            this.updateOutput(e.getMessage());
+        }catch (Exception e){
+
         }
     }
 
@@ -465,6 +472,8 @@ public class Home {
         }
         throw new NotFound();
     }
+
+
     public boolean checkDevices(String name){
         for (Product p : this.getDeviceList()) {
             if (p.getName().equals(name)) {
@@ -473,6 +482,8 @@ public class Home {
         }
         return false;
     }
+
+
     public void replaceProduct(String name, Product newProduct) throws NotFound {
         int index = -1;
         for (int i = 0; i < this.getDeviceList().size(); i++) {
@@ -489,6 +500,16 @@ public class Home {
         }
     }
 
+
+    public void illegalCommand(String [] args) {
+        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
+        this.updateOutput("ERROR: Erroneous command!\n");
+    }
+
+    public void illegalStart(String  args){
+        this.updateOutput("COMMAND: "+args + "\n");
+        this.updateOutput("ERROR: First command must be set initial time! Program is going to terminate!\n");
+    }
 
 
 
