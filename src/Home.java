@@ -5,11 +5,11 @@ import java.util.*;
 
 public class Home {
 
-    public TimeControl factoryTime;
+    private TimeControl factoryTime;
 
-    public LinkedList<Product> deviceList = new LinkedList<>();
-    public String output = new String();
-    public ArrayList<LocalDateTime> switchlist = new ArrayList<>();
+    private LinkedList<Product> deviceList = new LinkedList<>();
+    private String output = new String();
+    private ArrayList<LocalDateTime> switchlist = new ArrayList<>();
 
     public void setFactoryTime(String timeString) {
         this.factoryTime = new TimeControl(timeString);
@@ -32,11 +32,11 @@ public class Home {
         return factoryTime.getTime();
     }
 
-    public TimeControl getTimeControl() {
+    private TimeControl getTimeControl() {
         return this.factoryTime;
     }
 
-    public ArrayList<LocalDateTime> getSwitchlist() {
+    private ArrayList<LocalDateTime> getSwitchlist() {
         return this.switchlist;
     }
 
@@ -247,10 +247,14 @@ public class Home {
 
     }
 
-    public void switchCommand(String name, String status) {
-        this.updateOutput("COMMAND: Switch\t" + name + "\t" + status + "\n");
+    public void switchCommand(String [] args) {
+        this.updateOutput("COMMAND: Switch\t" +String.join("\t", args)+"\n");
         try {
-
+                if (!(args.length ==3)) {
+                    throw new Erroneous();
+                }
+                String name =args[1];
+                String status = args[1];
                 Product device = findDevices(name);
                 if (device instanceof Lamp && device.getName().equals(name)) {
                     device.switchDevice(status);
@@ -270,7 +274,7 @@ public class Home {
     }
 
 
-    public void doSwitches() {
+    private void doSwitches() {
         ArrayList<LocalDateTime> temp1 = new ArrayList<>();
         for (LocalDateTime i : this.getSwitchlist()) {
             if (i.isBefore(this.getCurrentTime()) || i.isEqual(this.getCurrentTime())) {
@@ -283,7 +287,7 @@ public class Home {
         }
     }
 
-    public void nopDoSwitch(LocalDateTime switchTime) {
+    private void nopDoSwitch(LocalDateTime switchTime) {
         for (Product p : this.getDeviceList()){
             try {
                 if (p.getSwitchTime().equals(switchTime)) {
@@ -311,14 +315,29 @@ public class Home {
 
 
     public void skipMinutes(String[] args) {
-        this.getTimeControl().skipMinutes(args[1]);
-        this.doSwitches();
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
+        try {
+            try {
+                if (!(args.length==2)){
+                    throw new Erroneous();
+                }
+                this.getTimeControl().skipMinutes(args[1]);
+                this.doSwitches();
+            }catch (NumberFormatException e){
+                throw new Erroneous();
+            }
+
+        }catch (Custom e){
+            this.updateOutput(e.getMessage());
+        }
     }
 
     public void setTime(String [] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
+            if (!(args.length ==2)) {
+                throw new Erroneous();
+            }
             LocalDateTime setTime = TimeControl.TimeFormatter(args[1]);
 
             if (setTime.isBefore(this.getCurrentTime())){
@@ -332,6 +351,8 @@ public class Home {
         }catch (DateTimeException e){
 
             this.updateOutput("ERROR: Time format is not correct!\n");
+        }catch (Custom e){
+            this.updateOutput(e.getMessage());
         }
 
     }
@@ -339,6 +360,9 @@ public class Home {
     public void setSwitchTime(String[] args) {
         this.updateOutput("COMMAND: SetSwitchTime\t" + args[1] + "\t" + args[2] + "\n");
         try {
+            if (!(args.length ==3)) {
+                throw new Erroneous();
+            }
             String name = args [1];
             String timeString = args[2];
             Product device = findDevices(name);
@@ -356,7 +380,7 @@ public class Home {
 
     }
 
-    public class ProductSwitchTimeComparator implements Comparator<Product> {
+    private class ProductSwitchTimeComparator implements Comparator<Product> {
         @Override
         public int compare(Product p1, Product p2) {
             LocalDateTime d1 = p1.getSwitchTime();
@@ -463,7 +487,7 @@ public class Home {
     }
 
 
-    public Product findDevices(String name) throws Custom {
+    private Product findDevices(String name) throws Custom {
 
             for (Product p : this.getDeviceList()) {
                 if (p.getName().equals(name)) {
@@ -474,7 +498,7 @@ public class Home {
     }
 
 
-    public boolean checkDevices(String name){
+    private boolean checkDevices(String name){
         for (Product p : this.getDeviceList()) {
             if (p.getName().equals(name)) {
                 return true;
@@ -484,7 +508,7 @@ public class Home {
     }
 
 
-    public void replaceProduct(String name, Product newProduct) throws NotFound {
+    private void replaceProduct(String name, Product newProduct) throws NotFound {
         int index = -1;
         for (int i = 0; i < this.getDeviceList().size(); i++) {
             Product p = this.getDeviceList().get(i);
@@ -509,6 +533,10 @@ public class Home {
     public void illegalStart(String  args){
         this.updateOutput("COMMAND: "+args + "\n");
         this.updateOutput("ERROR: First command must be set initial time! Program is going to terminate!\n");
+    }
+    public void illegalStartTime(String args){
+        this.updateOutput("COMMAND: "+args + "\n");
+        this.updateOutput("ERROR: Format of the initial date is wrong! Program is going to terminate!\n");
     }
 
 

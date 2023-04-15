@@ -1,6 +1,7 @@
 import java.io.FileWriter;
 
 import java.io.IOException;
+import java.time.DateTimeException;
 import java.util.*;
 
 public class Main {
@@ -60,7 +61,7 @@ public class Main {
                             home.changeName(values);
                             break;
                         case "Switch":
-                            home.switchCommand(values[1],values[2]);
+                            home.switchCommand(values);
                             break;
                         case "ZReport":
                             home.zReport(false);
@@ -82,13 +83,13 @@ public class Main {
                 home.zReport(true);
             }
 
-
-
-
         } catch (ArrayIndexOutOfBoundsException e) {
             home.illegalStart(inputs[0]);
 
-        }finally {
+        }catch (DateTimeException e){
+            home.illegalStartTime(inputs[0]);
+        }
+        finally {
             try {
                 FileWriter writer = new FileWriter("output.txt");
                 writer.write(home.getOutput());

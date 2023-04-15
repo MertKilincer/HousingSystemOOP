@@ -19,8 +19,14 @@ public class TimeControl {
     public void setTime(LocalDateTime time) {
         this.Time = time;
     }
-    public void skipMinutes(String min){
-        this.Time =this.Time.plusMinutes(Integer.parseInt(min));
+    public void skipMinutes(String minuteString) throws Custom {
+        int minutes =Integer.parseInt(minuteString);
+        if (minutes<0){
+            throw new Custom("ERROR: Time cannot be reversed!\n");
+        } else if (minutes==0) {
+            throw new Custom( "ERROR: There is nothing to skip!\n");
+        }
+        this.Time =this.Time.plusMinutes(minutes);
     }
 
     public static LocalDateTime TimeFormatter(String timeString){
