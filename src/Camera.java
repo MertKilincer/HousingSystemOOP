@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 public class Camera extends Product implements Switchable{
 
     private double ConsumptionRate;
-    public LocalDateTime start;
-    public LocalDateTime end;
-    public double usedMemory;
+    private LocalDateTime start;
+    private LocalDateTime end;
+    private double usedMemory;
 
     public Camera(String name,double memoryConsumption) throws Custom {
         super(name);
@@ -59,12 +59,12 @@ public class Camera extends Product implements Switchable{
         }
 
     }
-    public void calculate(){
+    private void calculate(){
         this.usedMemory =this.getUsedMemory() + ConsumptionRate*duration(this.start,this.end);
         this.start = null;
         this.end = null;
     }
-    public double duration(LocalDateTime start,LocalDateTime end){
+    private double duration(LocalDateTime start,LocalDateTime end){
         if (start==null || end == null){
             return 0;
         }else {
@@ -75,7 +75,7 @@ public class Camera extends Product implements Switchable{
     public String info() {
         return  "Smart Camera "+ super.getName() +
                 " is " +super.getStatus().toLowerCase()+ " and used "+
-                this.getUsedMemory()+" MB of storage so far (excluding current status), " +
+                String.format("%.2f",this.getUsedMemory())+" MB of storage so far (excluding current status), " +
                 "and its time to switch its status is " +TimeControl.stringFormatter(super.getSwitchTime())+".\n";
     }
 }

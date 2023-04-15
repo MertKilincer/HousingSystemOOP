@@ -5,10 +5,10 @@ public class Plug extends Product implements Switchable {
 
     private double ampere;
     private double consumption;
-    public LocalDateTime start;
-    public LocalDateTime end;
+    private LocalDateTime start;
+    private LocalDateTime end;
 
-    public boolean plugged;
+    private boolean plugged;
 
     public Plug(String name) {
         super(name);
@@ -53,7 +53,7 @@ public class Plug extends Product implements Switchable {
     @Override
     public String  info() {
         return  "Smart Plug " + super.getName() + " is " + super.getStatus().toLowerCase() +
-                " and consumed " + String.format("%.2f", this.consumption) +
+                " and consumed " + String.format("%.2f", this.consumption)+
                 "W so far (excluding current device), and " +
                 "its time to switch its status is " + TimeControl.stringFormatter(this.getSwitchTime())+".\n";
     }
@@ -81,13 +81,13 @@ public class Plug extends Product implements Switchable {
         }
     }
 
-    public void calculate() {
+    private void calculate() {
         this.consumption = this.consumption + 220 * (this.ampere) *
                 duration(this.start,this.end);
         this.start = null;
         this.end = null;
     }
-    public double duration(LocalDateTime start,LocalDateTime end){
+    private double duration(LocalDateTime start,LocalDateTime end){
         if (start==null || end == null){
             return 0;
         }else {

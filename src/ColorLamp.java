@@ -1,6 +1,6 @@
 public class ColorLamp extends Lamp{
 
-    public String colorCode;
+    private String colorCode;
 
     public ColorLamp(String name) {
         super(name);
@@ -48,7 +48,7 @@ public class ColorLamp extends Lamp{
         super.setBrightness(brightness);
     }
 
-    public static boolean isHexadecimal(String str) {
+    private static boolean isHexadecimal(String str) {
         if(str == null || str.isEmpty()) {
             return false; // if string is null or empty, it cannot be a hexadecimal number
         }

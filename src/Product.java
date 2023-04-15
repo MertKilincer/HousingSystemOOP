@@ -5,7 +5,7 @@ public abstract class Product {
     private String status;
     private LocalDateTime switchTime;
 
-    public LocalDateTime lastswitchtime;
+    private LocalDateTime lastswitchtime;
 
     public Product(String name) {
         this.name = name;
@@ -18,7 +18,6 @@ public abstract class Product {
     }
 
     public Product() {
-
     }
 
     public String getStatus() {
