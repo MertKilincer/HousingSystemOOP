@@ -64,9 +64,9 @@ public abstract class Product {
     }
 
     public void switchDevice(String val) throws Custom {
-        if (this.getStatus().equals("Off") && val.equals("On")) {
+        if (val.equals("On")) {
             this.setStatus("On");
-        } else if (this.getStatus().equals("On") && val.equals("Off")) {
+        } else if (val.equals("Off")) {
             this.setStatus("Off");
         }
     }

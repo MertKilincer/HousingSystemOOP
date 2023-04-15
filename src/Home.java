@@ -248,13 +248,13 @@ public class Home {
     }
 
     public void switchCommand(String [] args) {
-        this.updateOutput("COMMAND: Switch\t" +String.join("\t", args)+"\n");
+        this.updateOutput("COMMAND: " +String.join("\t", args)+"\n");
         try {
                 if (!(args.length ==3)) {
                     throw new Erroneous();
                 }
                 String name =args[1];
-                String status = args[1];
+                String status = args[2];
                 Product device = findDevices(name);
                 if (device instanceof Lamp && device.getName().equals(name)) {
                     device.switchDevice(status);

@@ -6,7 +6,7 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args)  {
-        String[] inputs = ReadInputFile.readFile("input6.txt");
+        String[] inputs = ReadInputFile.readFile("input2.txt");
         Home home = new Home();
         inputs = Arrays.stream(inputs).filter(s -> !s.isEmpty()).toArray(String[]::new);
 
