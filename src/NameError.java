@@ -1,9 +1,9 @@
 /**
  * Subclass for user defined exception class Custom
+ * @see Custom
  */
 public class NameError extends Custom{
     /**
-     *
      * Constructor of the exception that ensures every device has a unique name
      */
     public NameError() {

@@ -44,9 +44,9 @@ public class ColorLamp extends Lamp {
 
     public void setColorCode(String colorCode) throws Custom {
         checkColorCode(colorCode);
-        cCode(colorCode);
+        colorAssigner(colorCode);
     }
-    public void cCode(String colorCode){
+    public void colorAssigner(String colorCode){
             this.colorCode = colorCode;
             this.ColorMode = true;
         }
@@ -73,7 +73,7 @@ public class ColorLamp extends Lamp {
     public void setColor(String colorCode, int brightness) throws Custom {
         checkColorCode(colorCode);
         checkBrigtness(brightness);
-        cCode(colorCode);
+        colorAssigner(colorCode);
         super.setBrightness(brightness);
         this.ColorMode = true;
     }

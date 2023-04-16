@@ -4,18 +4,18 @@ import java.time.LocalDateTime;
 /**
  *
  * public camera class extends Product abstract class and its implements Switchable interface
- *@author Mert Kılınçer
+ * Camera class has four private field
+ * @consumptionRate  rate stands for memory consumption rate Megabyte per minute
+ * @start field stands for starting of memory consumption
+ * @end field stands for end time of memory consumption
+ * @usedMemory field stands for used memory
+ *
+ * @author Mert Kılınçer
  * @see Device
  * @see ConsumerDevice
  */
 public class Camera extends Device implements ConsumerDevice {
-    /**
-     * Camera class has four private field
-     * 1-consumptionRate stands for memory consumption rate Megabyte per minute
-     * 2-start stands for starting of memory consumption
-     * 3-end stands for end time of memory consumption
-     * 4-usedMemory stands for used memory space in Megabyte format
-     */
+
     private double consumptionRate;
     private LocalDateTime start;
     private LocalDateTime end;
@@ -50,11 +50,7 @@ public class Camera extends Device implements ConsumerDevice {
         }
     }
 
-    /**
-     * Method sets consumptionRate field
-     * @param consumptionRate double value that can be used for field of camera class
-     * @throws Custom
-     */
+
     public void setConsumptionRate(double consumptionRate) throws Custom {
         if (consumptionRate>0){//check for positive values
             this.consumptionRate = consumptionRate;
@@ -63,10 +59,7 @@ public class Camera extends Device implements ConsumerDevice {
         }
     }
 
-    /**
-     * Getter method for usedMemory field
-     * @return double field usedMemory
-     */
+
     public double getUsedMemory(){return this.usedMemory;}
 
     /**
@@ -88,16 +81,17 @@ public class Camera extends Device implements ConsumerDevice {
 
     /**
      * Method that switch device status to val parameter
-     * @param time its may affect start and end field with time value
-     * @param val switch device status to these value
+     *
+     * @param time        its may affect start and end field with time value
+     * @param statusValue switch device status to these value
      * @throws Custom
      */
     @Override
-    public void switchDevice(LocalDateTime time, String val) throws Custom {
-        if (val.equals("On")) {
+    public void switchDevice(LocalDateTime time, String statusValue) throws Custom {
+        if (statusValue.equals("On")) {
             super.setStatus("On");
             this.start = time;
-        } else if (val.equals("Off")) {
+        } else if (statusValue.equals("Off")) {
             super.setStatus("Off");
             this.end = time;
             this.calculate();

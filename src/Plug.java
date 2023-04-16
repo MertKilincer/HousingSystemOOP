@@ -3,20 +3,20 @@ import java.time.LocalDateTime;
 
 /**
  * Public plug class extends Product abstract class and its implements Switchable interface
+ * Plug class has six private field
+ * @Ampere field stands for energy consumption calculation
+ * @start field stands for starting of memory consumption
+ * @end field stands for end time of memory consumption
+ * @consumption field stands for used energy
+ * @voltage constant voltage value
+ * @plugged boolean value holds plug availability
+ *
  *@author Mert Kılınçer
  * @see Device
  * @see ConsumerDevice
  */
-public class Plug extends Device implements ConsumerDevice,Pluggable {
-    /**
-     * Camera class has four private field
-     * 1- Ampere stands for energy consumption calculation
-     * 2-start stands for starting of memory consumption
-     * 3-end stands for end time of memory consumption
-     * 4-consumption stands for used energy
-     * 5-voltage constant
-     * 6-boolean value holds plug has an item
-     */
+public class Plug extends Device implements ConsumerDevice {
+
     private double ampere;
     private double consumption;
     private LocalDateTime start;
@@ -126,7 +126,7 @@ public class Plug extends Device implements ConsumerDevice,Pluggable {
      * Method for plug in device to the plug object
      * @param ampere ampere value
      * @param time value can affect start and end times
-     * @throws Custom if there is already a device is plugged in it throws a subclass error
+     * @throws Custom if there is already a device is plugged in it throws a subclass exception
      */
     public void PlugIn(double ampere, LocalDateTime time) throws Custom {
         if (!this.isPlugged()){
@@ -182,18 +182,18 @@ public class Plug extends Device implements ConsumerDevice,Pluggable {
     }
 
     /**
-     * Method that switch device status to val parameter
-     * @param time its may affect start and end field with time value
-     * @param val switch device status to these value
+     * Method that switch device status to parameter
+     * @param time        its may affect start and end field with time value
+     * @param statusValue switch device status to these value
      * @throws Custom
      */
-    public void switchDevice(LocalDateTime time, String val) throws Custom {
-        if (val.equals("On")) {
+    public void switchDevice(LocalDateTime time, String statusValue) throws Custom {
+        if (statusValue.equals("On")) {
             super.setStatus("On");
             if (this.plugged) {//check plugged field to change start field
                 this.start = time;
             }
-        } else if (val.equals("Off")) {
+        } else if (statusValue.equals("Off")) {
             super.setStatus("Off");
             if (this.plugged) {//check plugged field to change end field
                 this.end = time;
