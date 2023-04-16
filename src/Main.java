@@ -6,7 +6,7 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args)  {
-        String[] inputs = ReadInputFile.readFile("input2.txt");
+        String[] inputs = ReadInputFile.readFile(args[0]);
         Home home = new Home();
         inputs = Arrays.stream(inputs).filter(s -> !s.isEmpty()).toArray(String[]::new);
 
@@ -74,14 +74,14 @@ public class Main {
 
                     }
 
-
+                if (!(inputs[inputs.length-1].equals("ZReport"))){
+                    home.zReport(true);
+                }
 
             } else {
-                home.illegalStart(inputs[0]);
+                    home.illegalStart(inputs[0]);
             }
-            if (!(inputs[inputs.length-1].equals("ZReport"))){
-                home.zReport(true);
-            }
+
 
         } catch (ArrayIndexOutOfBoundsException e) {
             home.illegalStart(inputs[0]);
@@ -91,7 +91,7 @@ public class Main {
         }
         finally {
             try {
-                FileWriter writer = new FileWriter("output.txt");
+                FileWriter writer = new FileWriter(args[1]);
                 writer.write(home.getOutput());
                 writer.close();
             } catch (IOException e) {

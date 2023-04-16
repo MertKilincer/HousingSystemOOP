@@ -1,38 +1,79 @@
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+/**
+ * Public plug class extends Product abstract class and its implements Switchable interface
+ *@author Mert Kılınçer
+ * @see Product
+ * @see Switchable
+ */
 public class Plug extends Product implements Switchable {
-
+    /**
+     * Camera class has four private field
+     * 1- Ampere stands for energy consumption calculation
+     * 2-start stands for starting of memory consumption
+     * 3-end stands for end time of memory consumption
+     * 4-consumption stands for used energy
+     * 5-voltage constant
+     * 6-boolean value holds plug has an item
+     */
     private double ampere;
     private double consumption;
     private LocalDateTime start;
     private LocalDateTime end;
-
+    private static final double voltage=200.0;
     private boolean plugged;
 
+    /**
+     * constructor with name
+     * @param name name of the device
+     */
     public Plug(String name) {
         super(name);
 
     }
 
+    /**
+     * Constructor with name and status
+     * @param name name of the device
+     * @param status status of the device
+     * @throws Custom
+     */
     public Plug(String name, String status) throws Custom {
         super(name, status);
     }
 
+    /**
+     * Constructor with name ,status,ampere and time value for start
+     * @param name name of the device
+     * @param status status of the device
+     * @param Ampere ampere value
+     * @param start start time for energy consumption
+     * @throws Custom
+     */
+    public Plug(String name, String status, double Ampere,LocalDateTime start) throws Custom {
+        super(name, status);
+        PlugIn(Ampere,start);//plug in an item
+    }
+
+    /**
+     * Setter for ampere
+     * @param ampere ampere value
+     * @throws PositivityError if values is less than zero it throws an error
+     */
     public void setAmpere(double ampere) throws PositivityError {
         if (ampere > 0) {
             this.ampere = ampere;
         } else {
-            throw new PositivityError("Ampere");
+            throw new PositivityError("Ampere");//give an error if condition satisfies
         }
     }
 
-    public Plug(String name, String status, double Ampere,LocalDateTime start) throws Custom {
-        super(name, status);
-        PlugIn(Ampere,start);
-    }
-
-
+    /**
+     * Method that switches objects
+     * @param time  value can affect start and end times
+     * @throws Custom
+     */
     @Override
     public void nopSwitch(LocalDateTime time) throws Custom {
         if (super.getStatus().equals("Off")) {
@@ -49,15 +90,12 @@ public class Plug extends Product implements Switchable {
         }
     }
 
-
-    @Override
-    public String  info() {
-        return  "Smart Plug " + super.getName() + " is " + super.getStatus().toLowerCase() +
-                " and consumed " + String.format("%.2f", this.consumption)+
-                "W so far (excluding current device), and " +
-                "its time to switch its status is " + TimeControl.stringFormatter(this.getSwitchTime())+".\n";
-    }
-
+    /**
+     *  
+     * @param ampere ampere value
+     * @param time value can affect start and end times
+     * @throws Custom if there is already a device is plugged in it throws a subclass error
+     */
     public void PlugIn(double ampere, LocalDateTime time) throws Custom {
         if (!plugged){
             setAmpere(ampere);
@@ -68,25 +106,41 @@ public class Plug extends Product implements Switchable {
         }
     }
 
+    /**
+     * Method for plug off
+     * @param time value can affect start and end times
+     * @throws Custom if there is already a device is plugged out it throws a subclass error
+     */
     public void PlugOff(LocalDateTime time) throws Custom {
         if (plugged){
             this.plugged = false;
             if (super.getStatus().equals("On")){
             this.end = time;
             }
-            this.calculate();
+            this.calculate();//calculate the consumption
             this.ampere = 0;
-    }else{
+        }else{
             throw new PlugOutError();
         }
     }
 
+    /**
+     *  Method that updates energy consumption
+     */
     private void calculate() {
-        this.consumption = this.consumption + 220 * (this.ampere) *
-                duration(this.start,this.end);
+        this.consumption = this.consumption + voltage * (this.ampere) * duration(this.start,this.end);
+        //uses duration method and multiply by voltage value and ampere to update energy Consumption
+        //resetting the start and end field
         this.start = null;
         this.end = null;
     }
+
+    /**
+     * Method calculate difference between date time values
+     * @param start LocalDateTime type value represent start field
+     * @param end   LocalDateTime type value represent end field
+     * @return double type difference between time values in hours
+     */
     private double duration(LocalDateTime start,LocalDateTime end){
         if (start==null || end == null){
             return 0;
@@ -95,19 +149,37 @@ public class Plug extends Product implements Switchable {
         }
     }
 
+    /**
+     * Method that switch device status to val parameter
+     * @param time its may affect start and end field with time value
+     * @param val switch device status to these value
+     * @throws Custom
+     */
     public void switchDevice(LocalDateTime time, String val) throws Custom {
         if (val.equals("On")) {
             super.setStatus("On");
-            if (this.plugged) {
+            if (this.plugged) {//check plugged field to change start field
                 this.start = time;
             }
         } else if (val.equals("Off")) {
             super.setStatus("Off");
-            if (this.plugged) {
+            if (this.plugged) {//check plugged field to change end field
                 this.end = time;
                 this.calculate();
             }
         }
 
+    }
+
+    /**
+     *  Info method create information about device
+     * @return all device values as a specific string
+     */
+    @Override
+    public String  info() {
+        return  "Smart Plug " + super.getName() + " is " + super.getStatus().toLowerCase() + " and consumed "
+                + String.format("%.2f", this.consumption).replace(".",",")//format the output
+                + "W so far (excluding current device), and " + "its time to switch its status is "
+                + TimeControl.stringFormatter(this.getSwitchTime())+".\n";
     }
 }

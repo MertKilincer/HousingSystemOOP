@@ -18,7 +18,9 @@ public class Home {
     }
 
 
-    public LinkedList<Product> getDeviceList(){return this.deviceList;}
+    public LinkedList<Product> getDeviceList() {
+        return this.deviceList;
+    }
 
     public String getOutput() {
         return this.output;
@@ -59,9 +61,9 @@ public class Home {
                     break;
             }
             String Name = input[2];
-            if (!checkDevices(Name)){
+            if (!checkDevices(Name)) {
                 this.getDeviceList().add(device);
-            }else {
+            } else {
                 throw new NameError();
             }
 
@@ -70,25 +72,25 @@ public class Home {
         }
     }
 
-    private  Plug getPlug(String[] args) throws Custom {
+    private Plug getPlug(String[] args) throws Custom {
 
         if (args.length == 3) {
             return new Plug(args[2]);
         } else if (args.length == 4) {
             return new Plug(args[2], args[3]);
         } else if (args.length == 5) {
-            return new Plug(args[2], args[3], Double.parseDouble(args[4]),this.getCurrentTime());
+            return new Plug(args[2], args[3], Double.parseDouble(args[4]), this.getCurrentTime());
         } else {
             throw new Erroneous();
         }
     }
 
-    private  Camera getCamera(String[] args) throws Custom {
+    private Camera getCamera(String[] args) throws Custom {
 
         if (args.length == 4) {
             return new Camera(args[2], Double.parseDouble(args[3]));
         } else if (args.length == 5) {
-            return new Camera(args[2], Double.parseDouble(args[3]), args[4],this.getCurrentTime());
+            return new Camera(args[2], Double.parseDouble(args[3]), args[4], this.getCurrentTime());
         } else {
             throw new Erroneous();
         }
@@ -123,14 +125,17 @@ public class Home {
     public void plugIn(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
+            if (!(args.length == 3)) {
+                throw new Erroneous();
+            }
             String name = args[1];
             double Ampere = Double.parseDouble(args[2]);
-            Product device =findDevices(name);
+            Product device = findDevices(name);
             Plug plug = (Plug) device;
             plug.PlugIn(Ampere, this.getCurrentTime());
-            replaceProduct(name,plug);
+            replaceProduct(name, plug);
 
-        }catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             this.updateOutput("null");
         } catch (NumberFormatException e) {
             this.updateOutput("ERROR: Erroneous command!\n");
@@ -141,132 +146,163 @@ public class Home {
         }
     }
 
-    public void plugOut(String [] args) {
+    public void plugOut(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
-
+            if (!(args.length == 2)) {
+                throw new Erroneous();
+            }
             String name = args[1];
-            Product device =findDevices(name);
+            Product device = findDevices(name);
             Plug temp = (Plug) device;
             temp.PlugOff(this.getCurrentTime());
-            replaceProduct(name,temp);
+            replaceProduct(name, temp);
 
-        }catch (NullPointerException e) {
+        } catch (NullPointerException e) {
         } catch (Custom e) {
             this.updateOutput(e.getMessage());
         } catch (ClassCastException e) {
             this.updateOutput("ERROR: This device is not a smart plug!\n");
         }
     }
-    public void setKelvin(String[] args){
+
+    public void setKelvin(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
-            String name = args[1];
+            try {
+                if (!(args.length == 3)) {
+                    throw new Erroneous();
+                }
+                String name = args[1];
+                Product device = findDevices(name);
+                Lamp lamp = (Lamp) device;
+                lamp.setKelvin(Integer.parseInt(args[2]));
+                replaceProduct(name, lamp);
 
-            Product device = findDevices(name);
-            Lamp lamp = (Lamp) device;
-            lamp.setKelvin(Integer.parseInt(args[2]));
-            replaceProduct(name,lamp);
-
-        }catch (Custom e){
+            } catch (NumberFormatException e) {
+                throw new Erroneous();
+            }
+        } catch (Custom e) {
             this.updateOutput(e.getMessage());
-        }catch (ClassCastException e){
+        } catch (ClassCastException e) {
             this.updateOutput("ERROR: This device is not a smart lamp!\n");
         }
-
     }
-    public void setBrightness(String[] args){
+
+    public void setBrightness(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
-            String name = args[1];
-            Product device = findDevices(name);
-            Lamp lamp = (Lamp) device;
-            lamp.setBrightness(Integer.parseInt(args[2]));
-            replaceProduct(name,lamp);
+            try {
+                if (!(args.length == 3)) {
+                    throw new Erroneous();
+                }
+                String name = args[1];
+                Product device = findDevices(name);
+                Lamp lamp = (Lamp) device;
+                lamp.setBrightness(Integer.parseInt(args[2]));
+                replaceProduct(name, lamp);
 
-        }catch (Custom e){
+            } catch (NumberFormatException e) {
+                throw new Erroneous();
+            }
+
+        } catch (Custom e) {
             this.updateOutput(e.getMessage());
-        }catch (ClassCastException e){
+        } catch (ClassCastException e) {
             this.updateOutput("ERROR: This device is not a smart lamp!\n");
         }
-
     }
 
-    public void setColorCode(String[] args){
+    public void setColorCode(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
+            if (!(args.length == 3)) {
+                throw new Erroneous();
+            }
             String name = args[1];
-
             Product device = findDevices(name);
             ColorLamp lamp = (ColorLamp) device;
             lamp.setColorCode(args[2]);
-            replaceProduct(name,lamp);
+            replaceProduct(name, lamp);
 
-        }catch (Custom e){
+        } catch (Custom e) {
             this.updateOutput(e.getMessage());
-        }catch (ClassCastException e){
-            this.updateOutput("ERROR: This device is not a smart color lamp!\n");
-        }
-
-    }
-    public void setWhite(String[] args){
-        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
-        try {
-            String name = args[1];
-
-            Product device = findDevices(name);
-            Lamp lamp = (Lamp) device;
-            lamp.setWhite(Integer.parseInt(args[2]),Integer.parseInt(args[3]));
-            replaceProduct(name,lamp);
-
-
-        }catch (Custom e){
-            this.updateOutput(e.getMessage());
-        }catch (ClassCastException e){
-            this.updateOutput("ERROR: This device is not a smart lamp!\n");
-        }
-
-    }
-    public void setColor(String [] args){
-        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
-        try {
-            String name = args[1];
-
-            Product device = findDevices(name);
-            ColorLamp lamp = (ColorLamp) device;
-            lamp.setColor(args[2],Integer.parseInt(args[3]));
-            replaceProduct(name,lamp);
-
-
-
-        }catch (Custom e){
-            this.updateOutput(e.getMessage());
-        }catch (ClassCastException e){
+        } catch (ClassCastException e) {
             this.updateOutput("ERROR: This device is not a smart color lamp!\n");
         }
 
     }
 
-    public void switchCommand(String [] args) {
-        this.updateOutput("COMMAND: " +String.join("\t", args)+"\n");
+
+    public void setWhite(String[] args) {
+        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
-                if (!(args.length ==3)) {
+            try {
+                if (!(args.length == 4)) {
                     throw new Erroneous();
                 }
-                String name =args[1];
-                String status = args[2];
+                String name = args[1];
                 Product device = findDevices(name);
-                if (device instanceof Lamp && device.getName().equals(name)) {
-                    device.switchDevice(status);
-                    replaceProduct(name,device);
-                } else if (device.getName().equals(name)) {
-                    Switchable switchableDevice = (Switchable) device;
-                    switchableDevice.switchDevice(this.getCurrentTime(), status);
-                    replaceProduct(name, (Product) switchableDevice);
+                Lamp lamp = (Lamp) device;
+                lamp.setWhite(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+                replaceProduct(name, lamp);
+
+
+            } catch (NumberFormatException e) {
+                throw new Erroneous();
+            }
+        } catch (Custom e) {
+            this.updateOutput(e.getMessage());
+        } catch (ClassCastException e) {
+            this.updateOutput("ERROR: This device is not a smart lamp!\n");
+        }
+    }
+
+
+    public void setColor(String[] args) {
+        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
+        try {
+            try {
+                if (!(args.length == 4)) {
+                    throw new Erroneous();
                 }
+                String name = args[1];
+                Product device = findDevices(name);
+                ColorLamp lamp = (ColorLamp) device;
+                lamp.setColor(args[2], Integer.parseInt(args[3]));
+                replaceProduct(name, lamp);
 
 
-        }catch (NullPointerException e) {
+            } catch (NumberFormatException e) {
+                throw new Erroneous();
+            }
+        } catch (Custom e) {
+            this.updateOutput(e.getMessage());
+        } catch (ClassCastException e) {
+            this.updateOutput("ERROR: This device is not a smart color lamp!\n");
+        }
+    }
+
+    public void switchCommand(String[] args) {
+        this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
+        try {
+            if (!(args.length == 3)) {
+                throw new Erroneous();
+            }
+            String name = args[1];
+            String status = args[2];
+            Product device = findDevices(name);
+            if (device instanceof Lamp && device.getName().equals(name)) {
+                device.switchDevice(status);
+                replaceProduct(name, device);
+            } else if (device.getName().equals(name)) {
+                Switchable switchableDevice = (Switchable) device;
+                switchableDevice.switchDevice(this.getCurrentTime(), status);
+                replaceProduct(name, (Product) switchableDevice);
+            }
+
+
+        } catch (NullPointerException e) {
 
         } catch (Custom e) {
             this.updateOutput(e.getMessage());
@@ -288,7 +324,7 @@ public class Home {
     }
 
     private void nopDoSwitch(LocalDateTime switchTime) {
-        for (Product p : this.getDeviceList()){
+        for (Product p : this.getDeviceList()) {
             try {
                 if (p.getSwitchTime().equals(switchTime)) {
                     p.nopSwitch(switchTime);
@@ -318,40 +354,39 @@ public class Home {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
             try {
-                if (!(args.length==2)){
+                if (!(args.length == 2)) {
                     throw new Erroneous();
                 }
                 this.getTimeControl().skipMinutes(args[1]);
                 this.doSwitches();
-            }catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 throw new Erroneous();
             }
 
-        }catch (Custom e){
+        } catch (Custom e) {
             this.updateOutput(e.getMessage());
         }
     }
 
-    public void setTime(String [] args) {
+    public void setTime(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
-            if (!(args.length ==2)) {
+            if (!(args.length == 2)) {
                 throw new Erroneous();
             }
             LocalDateTime setTime = TimeControl.TimeFormatter(args[1]);
 
-            if (setTime.isBefore(this.getCurrentTime())){
+            if (setTime.isBefore(this.getCurrentTime())) {
                 this.updateOutput("ERROR: Time cannot be reversed!\n");
-            }else {
+            } else {
                 this.getTimeControl().setTime(setTime);
                 this.doSwitches();
             }
 
 
-        }catch (DateTimeException e){
-
+        } catch (DateTimeException e) {
             this.updateOutput("ERROR: Time format is not correct!\n");
-        }catch (Custom e){
+        } catch (Custom e) {
             this.updateOutput(e.getMessage());
         }
 
@@ -360,21 +395,21 @@ public class Home {
     public void setSwitchTime(String[] args) {
         this.updateOutput("COMMAND: SetSwitchTime\t" + args[1] + "\t" + args[2] + "\n");
         try {
-            if (!(args.length ==3)) {
+            if (!(args.length == 3)) {
                 throw new Erroneous();
             }
-            String name = args [1];
+            String name = args[1];
             String timeString = args[2];
             Product device = findDevices(name);
             LocalDateTime TimeOfSwitch = TimeControl.TimeFormatter(timeString);
             device.setSwitchTime(TimeOfSwitch);
-            replaceProduct(name,device);
+            replaceProduct(name, device);
             if (!(this.getSwitchlist().contains(TimeOfSwitch))) {
                 this.getSwitchlist().add(TimeOfSwitch);
             }
             Collections.sort(this.getSwitchlist());
 
-        }catch (Custom e){
+        } catch (Custom e) {
             this.updateOutput(e.getMessage());
         }
 
@@ -384,17 +419,17 @@ public class Home {
         @Override
         public int compare(Product p1, Product p2) {
             LocalDateTime d1 = p1.getSwitchTime();
-            LocalDateTime d2 =p2.getSwitchTime();
-            LocalDateTime l1 =p1.getLastswitchtime();
-            LocalDateTime l2 =p2.getLastswitchtime();
+            LocalDateTime d2 = p2.getSwitchTime();
+            LocalDateTime l1 = p1.getLastswitchtime();
+            LocalDateTime l2 = p2.getLastswitchtime();
             if (d1 == null && d2 == null) {
-                if (l1==null && l2 == null){
+                if (l1 == null && l2 == null) {
                     return 0; // both are null, equal
-                } else if (l1==null) {
+                } else if (l1 == null) {
                     return 1;
-                } else if (l2==null) {
+                } else if (l2 == null) {
                     return -1;
-                } else{
+                } else {
                     return l2.compareTo(l1);
                 }
             } else if (d1 == null) {
@@ -408,12 +443,12 @@ public class Home {
     }
 
     public void zReport(boolean lastReport) {
-        
-         if (lastReport) {
-             this.updateOutput("ZReport:\nTime is:\t" + TimeControl.stringFormatter(this.getCurrentTime()) + "\n");
-         }else {
-             this.updateOutput("COMMAND: ZReport\nTime is:\t" + TimeControl.stringFormatter(this.getCurrentTime()) + "\n");
-         }
+
+        if (lastReport) {
+            this.updateOutput("ZReport:\nTime is:\t" + TimeControl.stringFormatter(this.getCurrentTime()) + "\n");
+        } else {
+            this.updateOutput("COMMAND: ZReport\nTime is:\t" + TimeControl.stringFormatter(this.getCurrentTime()) + "\n");
+        }
 
         Collections.sort(this.getDeviceList(), new ProductSwitchTimeComparator());
         for (Product p : this.getDeviceList()) {
@@ -424,24 +459,24 @@ public class Home {
 
 
     public void removeDevice(String[] args) {
-        this.updateOutput("COMMAND: Remove\t"+args[1]+"\n");
+        this.updateOutput("COMMAND: Remove\t" + args[1] + "\n");
         try {
             if (args.length == 2) {
-                String name =args[1];
-                Product device =findDevices(name);
+                String name = args[1];
+                Product device = findDevices(name);
 
-                if (device.getStatus().equals("On")){
-                    if (device instanceof Lamp){
+                if (device.getStatus().equals("On")) {
+                    if (device instanceof Lamp) {
                         device.switchDevice("Off");
-                        replaceProduct(name,device);
-                    }else {
+                        replaceProduct(name, device);
+                    } else {
                         Switchable switchableDevice = (Switchable) device;
                         switchableDevice.switchDevice(this.getCurrentTime(), "Off");
                         replaceProduct(name, (Product) switchableDevice);
                     }
                 }
                 this.updateOutput("SUCCESS: Information about removed smart device is as follows:\n"
-                        +device.info());
+                        + device.info());
 
                 this.getDeviceList().remove(device);
 
@@ -454,7 +489,7 @@ public class Home {
     }
 
 
-    public void changeName(String [] args) {
+    public void changeName(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
             try {
@@ -481,7 +516,7 @@ public class Home {
             } catch (Custom e) {
                 this.updateOutput(e.getMessage());
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
@@ -489,16 +524,16 @@ public class Home {
 
     private Product findDevices(String name) throws Custom {
 
-            for (Product p : this.getDeviceList()) {
-                if (p.getName().equals(name)) {
-                    return p;
-                }
+        for (Product p : this.getDeviceList()) {
+            if (p.getName().equals(name)) {
+                return p;
+            }
         }
         throw new NotFound();
     }
 
 
-    private boolean checkDevices(String name){
+    private boolean checkDevices(String name) {
         for (Product p : this.getDeviceList()) {
             if (p.getName().equals(name)) {
                 return true;
@@ -525,20 +560,20 @@ public class Home {
     }
 
 
-    public void illegalCommand(String [] args) {
+    public void illegalCommand(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         this.updateOutput("ERROR: Erroneous command!\n");
     }
 
-    public void illegalStart(String  args){
-        this.updateOutput("COMMAND: "+args + "\n");
+    public void illegalStart(String args) {
+        this.updateOutput("COMMAND: " + args + "\n");
         this.updateOutput("ERROR: First command must be set initial time! Program is going to terminate!\n");
     }
-    public void illegalStartTime(String args){
-        this.updateOutput("COMMAND: "+args + "\n");
+
+    public void illegalStartTime(String args) {
+        this.updateOutput("COMMAND: " + args + "\n");
         this.updateOutput("ERROR: Format of the initial date is wrong! Program is going to terminate!\n");
     }
-
 
 
 }
