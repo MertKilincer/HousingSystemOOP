@@ -4,10 +4,10 @@ import java.time.LocalDateTime;
 /**
  * Public plug class extends Product abstract class and its implements Switchable interface
  *@author Mert Kılınçer
- * @see Product
- * @see Switchable
+ * @see Device
+ * @see ConsumerDevice
  */
-public class Plug extends Product implements Switchable {
+public class Plug extends Device implements ConsumerDevice,Pluggable {
     /**
      * Camera class has four private field
      * 1- Ampere stands for energy consumption calculation
@@ -25,7 +25,7 @@ public class Plug extends Product implements Switchable {
     private boolean plugged;
 
     /**
-     * constructor with name
+     * Constructor with name
      * @param name name of the device
      */
     public Plug(String name) {
@@ -69,6 +69,38 @@ public class Plug extends Product implements Switchable {
         }
     }
 
+    public double getAmpere() {
+        return this.ampere;
+    }
+
+    public double getConsumption() {
+        return this.consumption;
+    }
+
+    public LocalDateTime getStart() {
+        return this.start;
+    }
+
+    public void setStart(LocalDateTime start) {
+        this.start = start;
+    }
+
+    public LocalDateTime getEnd() {
+        return this.end;
+    }
+
+    public void setEnd(LocalDateTime end) {
+        this.end = end;
+    }
+
+    public boolean isPlugged() {
+        return this.plugged;
+    }
+
+    public void setPlugged(boolean plugged) {
+        this.plugged = plugged;
+    }
+
     /**
      * Method that switches objects
      * @param time  value can affect start and end times
@@ -78,57 +110,57 @@ public class Plug extends Product implements Switchable {
     public void nopSwitch(LocalDateTime time) throws Custom {
         if (super.getStatus().equals("Off")) {
             super.setStatus("On");
-            if (this.plugged) {
-                this.start = time;
+            if (this.isPlugged()) {
+                this.setStart(time);
             }
         } else {
             super.setStatus("Off");
-            if (this.plugged) {
-                this.end = time;
+            if (this.isPlugged()) {
+                this.setEnd(time);
                 this.calculate();
             }
         }
     }
 
     /**
-     *  
+     * Method for plug in device to the plug object
      * @param ampere ampere value
      * @param time value can affect start and end times
      * @throws Custom if there is already a device is plugged in it throws a subclass error
      */
     public void PlugIn(double ampere, LocalDateTime time) throws Custom {
-        if (!plugged){
-            setAmpere(ampere);
-            plugged = true;
-            this.start = time;
+        if (!this.isPlugged()){
+            this.setAmpere(ampere);
+            this.setPlugged(true);
+            this.setStart(time);
     }else {
             throw new PlugInError();
         }
     }
 
     /**
-     * Method for plug off
+     * Method for plug out device from the plug object
      * @param time value can affect start and end times
      * @throws Custom if there is already a device is plugged out it throws a subclass error
      */
     public void PlugOff(LocalDateTime time) throws Custom {
-        if (plugged){
-            this.plugged = false;
+        if (this.isPlugged()){
+            setPlugged(false);
             if (super.getStatus().equals("On")){
-            this.end = time;
+            this.setEnd(time);
             }
             this.calculate();//calculate the consumption
-            this.ampere = 0;
+            this.setAmpere(0);
         }else{
             throw new PlugOutError();
         }
     }
 
     /**
-     *  Method that updates energy consumption
+     *  Method that updates energy consumption of the plug object
      */
-    private void calculate() {
-        this.consumption = this.consumption + voltage * (this.ampere) * duration(this.start,this.end);
+    public void calculate() {
+        this.consumption = this.getConsumption() + voltage * (this.getAmpere()) * duration(this.getStart(),this.getEnd());
         //uses duration method and multiply by voltage value and ampere to update energy Consumption
         //resetting the start and end field
         this.start = null;
@@ -136,12 +168,12 @@ public class Plug extends Product implements Switchable {
     }
 
     /**
-     * Method calculate difference between date time values
+     * Method calculate difference between date time values in the hour format
      * @param start LocalDateTime type value represent start field
      * @param end   LocalDateTime type value represent end field
      * @return double type difference between time values in hours
      */
-    private double duration(LocalDateTime start,LocalDateTime end){
+    public double duration(LocalDateTime start, LocalDateTime end){
         if (start==null || end == null){
             return 0;
         }else {
@@ -172,7 +204,7 @@ public class Plug extends Product implements Switchable {
     }
 
     /**
-     *  Info method create information about device
+     *  Info method create information about device object
      * @return all device values as a specific string
      */
     @Override

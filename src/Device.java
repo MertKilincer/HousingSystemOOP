@@ -1,28 +1,30 @@
 import java.time.LocalDateTime;
 
-public abstract class Product {
+public abstract class Device {
     private String name;
     private String status;
     private LocalDateTime switchTime;
 
     private LocalDateTime lastswitchtime;
 
-    public Product(String name) {
+    public Device(String name) {
         this.name = name;
         this.status = "Off";
     }
 
-    public Product(String name, String status) throws Custom {
+    public Device(String name, String status) throws Custom {
         this.name = name;
         setStatus(status);
     }
 
-    public Product() {
+    public Device() {
     }
 
     public String getStatus() {
         return this.status;
     }
+
+
     public void setStatus(String status) throws Custom {
         if (status.equals("On") || status.equals("Off")) {
             try {
@@ -40,12 +42,18 @@ public abstract class Product {
         }
     }
 
-
-
+    /**
+     * Setter for switchTime field
+     * @param switchTime
+     */
     public void setSwitchTime(LocalDateTime switchTime) {
         this.switchTime = switchTime;
     }
 
+    /**
+     * Getter for switchTime field
+     * @return
+     */
     public LocalDateTime getSwitchTime() {
         return this.switchTime;
     }
@@ -53,10 +61,18 @@ public abstract class Product {
         return this.lastswitchtime;
     }
 
+    /**
+     * Getter for name fied
+     * @return
+     */
     public String getName(){
         return this.name;
     }
 
+    /**
+     * Setter for name field
+     * @param name
+     */
     public void setName(String name){ this.name=name;}
     public void resetSwitchTime(){
         this.lastswitchtime =this.getSwitchTime();
@@ -71,8 +87,17 @@ public abstract class Product {
         }
     }
 
+
+
+
+
     public abstract void nopSwitch(LocalDateTime time) throws Custom;
 
+
+    /**
+     *  Info method create information about device object
+     * @return all device values as a specific string
+     */
     public abstract String info();
 
 

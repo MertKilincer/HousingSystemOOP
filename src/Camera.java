@@ -5,10 +5,10 @@ import java.time.LocalDateTime;
  *
  * public camera class extends Product abstract class and its implements Switchable interface
  *@author Mert Kılınçer
- * @see Product
- * @see Switchable
+ * @see Device
+ * @see ConsumerDevice
  */
-public class Camera extends Product implements Switchable{
+public class Camera extends Device implements ConsumerDevice {
     /**
      * Camera class has four private field
      * 1-consumptionRate stands for memory consumption rate Megabyte per minute
@@ -107,7 +107,7 @@ public class Camera extends Product implements Switchable{
     /**
      *  Method that updates memory
      */
-    private void calculate(){
+    public void calculate(){
 
         this.usedMemory =this.getUsedMemory() + this.consumptionRate *duration(this.start,this.end);
         //uses duration method and multiply by consumption rate and update existing memory
@@ -122,7 +122,7 @@ public class Camera extends Product implements Switchable{
      * @param end   LocalDateTime type value represent end field
      * @return
      */
-    private double duration(LocalDateTime start,LocalDateTime end){
+    public double duration(LocalDateTime start, LocalDateTime end){
         if (start==null || end == null){
             return 0;
         }else {

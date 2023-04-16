@@ -7,7 +7,7 @@ public class Home {
 
     private TimeControl factoryTime;
 
-    private LinkedList<Product> deviceList = new LinkedList<>();
+    private LinkedList<Device> deviceList = new LinkedList<>();
     private String output = new String();
     private ArrayList<LocalDateTime> switchlist = new ArrayList<>();
 
@@ -18,7 +18,7 @@ public class Home {
     }
 
 
-    public LinkedList<Product> getDeviceList() {
+    public LinkedList<Device> getDeviceList() {
         return this.deviceList;
     }
 
@@ -44,7 +44,7 @@ public class Home {
 
     public void add(String[] input) {
         this.updateOutput("COMMAND: " + String.join("\t", input) + "\n");
-        Product device = null;
+        Device device = null;
         try {
             switch (input[1]) {
                 case "SmartPlug":
@@ -130,7 +130,7 @@ public class Home {
             }
             String name = args[1];
             double Ampere = Double.parseDouble(args[2]);
-            Product device = findDevices(name);
+            Device device = findDevices(name);
             Plug plug = (Plug) device;
             plug.PlugIn(Ampere, this.getCurrentTime());
             replaceProduct(name, plug);
@@ -153,7 +153,7 @@ public class Home {
                 throw new Erroneous();
             }
             String name = args[1];
-            Product device = findDevices(name);
+            Device device = findDevices(name);
             Plug temp = (Plug) device;
             temp.PlugOff(this.getCurrentTime());
             replaceProduct(name, temp);
@@ -174,7 +174,7 @@ public class Home {
                     throw new Erroneous();
                 }
                 String name = args[1];
-                Product device = findDevices(name);
+                Device device = findDevices(name);
                 Lamp lamp = (Lamp) device;
                 lamp.setKelvin(Integer.parseInt(args[2]));
                 replaceProduct(name, lamp);
@@ -197,7 +197,7 @@ public class Home {
                     throw new Erroneous();
                 }
                 String name = args[1];
-                Product device = findDevices(name);
+                Device device = findDevices(name);
                 Lamp lamp = (Lamp) device;
                 lamp.setBrightness(Integer.parseInt(args[2]));
                 replaceProduct(name, lamp);
@@ -220,7 +220,7 @@ public class Home {
                 throw new Erroneous();
             }
             String name = args[1];
-            Product device = findDevices(name);
+            Device device = findDevices(name);
             ColorLamp lamp = (ColorLamp) device;
             lamp.setColorCode(args[2]);
             replaceProduct(name, lamp);
@@ -242,7 +242,7 @@ public class Home {
                     throw new Erroneous();
                 }
                 String name = args[1];
-                Product device = findDevices(name);
+                Device device = findDevices(name);
                 Lamp lamp = (Lamp) device;
                 lamp.setWhite(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
                 replaceProduct(name, lamp);
@@ -267,7 +267,7 @@ public class Home {
                     throw new Erroneous();
                 }
                 String name = args[1];
-                Product device = findDevices(name);
+                Device device = findDevices(name);
                 ColorLamp lamp = (ColorLamp) device;
                 lamp.setColor(args[2], Integer.parseInt(args[3]));
                 replaceProduct(name, lamp);
@@ -291,14 +291,14 @@ public class Home {
             }
             String name = args[1];
             String status = args[2];
-            Product device = findDevices(name);
+            Device device = findDevices(name);
             if (device instanceof Lamp && device.getName().equals(name)) {
                 device.switchDevice(status);
                 replaceProduct(name, device);
             } else if (device.getName().equals(name)) {
-                Switchable switchableDevice = (Switchable) device;
-                switchableDevice.switchDevice(this.getCurrentTime(), status);
-                replaceProduct(name, (Product) switchableDevice);
+                ConsumerDevice consumerDeviceDevice = (ConsumerDevice) device;
+                consumerDeviceDevice.switchDevice(this.getCurrentTime(), status);
+                replaceProduct(name, (Device) consumerDeviceDevice);
             }
 
 
@@ -324,7 +324,7 @@ public class Home {
     }
 
     private void nopDoSwitch(LocalDateTime switchTime) {
-        for (Product p : this.getDeviceList()) {
+        for (Device p : this.getDeviceList()) {
             try {
                 if (p.getSwitchTime().equals(switchTime)) {
                     p.nopSwitch(switchTime);
@@ -400,7 +400,7 @@ public class Home {
             }
             String name = args[1];
             String timeString = args[2];
-            Product device = findDevices(name);
+            Device device = findDevices(name);
             LocalDateTime TimeOfSwitch = TimeControl.TimeFormatter(timeString);
             device.setSwitchTime(TimeOfSwitch);
             replaceProduct(name, device);
@@ -415,9 +415,9 @@ public class Home {
 
     }
 
-    private class ProductSwitchTimeComparator implements Comparator<Product> {
+    private class ProductSwitchTimeComparator implements Comparator<Device> {
         @Override
-        public int compare(Product p1, Product p2) {
+        public int compare(Device p1, Device p2) {
             LocalDateTime d1 = p1.getSwitchTime();
             LocalDateTime d2 = p2.getSwitchTime();
             LocalDateTime l1 = p1.getLastswitchtime();
@@ -451,7 +451,7 @@ public class Home {
         }
 
         Collections.sort(this.getDeviceList(), new ProductSwitchTimeComparator());
-        for (Product p : this.getDeviceList()) {
+        for (Device p : this.getDeviceList()) {
             this.updateOutput(p.info());
         }
 
@@ -463,16 +463,16 @@ public class Home {
         try {
             if (args.length == 2) {
                 String name = args[1];
-                Product device = findDevices(name);
+                Device device = findDevices(name);
 
                 if (device.getStatus().equals("On")) {
                     if (device instanceof Lamp) {
                         device.switchDevice("Off");
                         replaceProduct(name, device);
                     } else {
-                        Switchable switchableDevice = (Switchable) device;
-                        switchableDevice.switchDevice(this.getCurrentTime(), "Off");
-                        replaceProduct(name, (Product) switchableDevice);
+                        ConsumerDevice consumerDeviceDevice = (ConsumerDevice) device;
+                        consumerDeviceDevice.switchDevice(this.getCurrentTime(), "Off");
+                        replaceProduct(name, (Device) consumerDeviceDevice);
                     }
                 }
                 this.updateOutput("SUCCESS: Information about removed smart device is as follows:\n"
@@ -505,7 +505,7 @@ public class Home {
                 }
                 if (!(checkDevices(newName))) {
 
-                    Product device = findDevices(oldName);
+                    Device device = findDevices(oldName);
                     device.setName(newName);
                     replaceProduct(newName, device);
 
@@ -522,9 +522,9 @@ public class Home {
     }
 
 
-    private Product findDevices(String name) throws Custom {
+    private Device findDevices(String name) throws Custom {
 
-        for (Product p : this.getDeviceList()) {
+        for (Device p : this.getDeviceList()) {
             if (p.getName().equals(name)) {
                 return p;
             }
@@ -534,7 +534,7 @@ public class Home {
 
 
     private boolean checkDevices(String name) {
-        for (Product p : this.getDeviceList()) {
+        for (Device p : this.getDeviceList()) {
             if (p.getName().equals(name)) {
                 return true;
             }
@@ -543,17 +543,17 @@ public class Home {
     }
 
 
-    private void replaceProduct(String name, Product newProduct) throws NotFound {
+    private void replaceProduct(String name, Device newDevice) throws NotFound {
         int index = -1;
         for (int i = 0; i < this.getDeviceList().size(); i++) {
-            Product p = this.getDeviceList().get(i);
+            Device p = this.getDeviceList().get(i);
             if (p.getName().equals(name)) {
                 index = i;
                 break;
             }
         }
         if (index != -1) {
-            this.getDeviceList().set(index, newProduct);
+            this.getDeviceList().set(index, newDevice);
         } else {
             throw new NotFound();
         }

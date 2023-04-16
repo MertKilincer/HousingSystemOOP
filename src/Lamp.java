@@ -1,6 +1,6 @@
 import java.time.LocalDateTime;
 
-public class Lamp extends Product {
+public class Lamp extends Device {
 
     private int kelvin;
     private int brightness;
