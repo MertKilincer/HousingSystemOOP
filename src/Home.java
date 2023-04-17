@@ -200,6 +200,7 @@ public class Home {
             Plug temp = (Plug) device;
             temp.PlugOff(this.getCurrentTime());//uses time to calculate consumption
             replaceProduct(name, temp);
+        }catch (NullPointerException e){
 
         } catch (Custom e) {
             this.updateOutput(e.getMessage());

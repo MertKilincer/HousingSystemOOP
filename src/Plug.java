@@ -21,7 +21,7 @@ public class Plug extends Device implements ConsumerDevice {
     private double consumption;
     private LocalDateTime start;
     private LocalDateTime end;
-    private static final double voltage=200.0;
+    private static final double voltage=220.0;
     private boolean plugged;
 
     /**
@@ -150,7 +150,7 @@ public class Plug extends Device implements ConsumerDevice {
             this.setEnd(time);
             }
             this.calculate();//calculate the consumption
-            this.setAmpere(0);
+            this.ampere= Double.parseDouble(null);
         }else{
             throw new PlugOutError();
         }
