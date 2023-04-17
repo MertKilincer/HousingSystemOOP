@@ -370,7 +370,7 @@ public class Home {
     }
 
     /**
-     *
+     * method makes status change when their switch time cames
      * @param switchTime
      */
     private void nopDoSwitch(LocalDateTime switchTime) {
@@ -378,7 +378,7 @@ public class Home {
             try {
                 if (p.getSwitchTime().equals(switchTime)) {
                     p.nopSwitch(switchTime);
-                    p.resetSwitchTime();
+                    p.resetSwitchTime();//reset switch times
                 }
             } catch (NullPointerException e) {
             } catch (Custom e) {
@@ -387,7 +387,9 @@ public class Home {
         }
     }
 
-
+    /**
+     * nop command make switch operations for the first item in switch time list and remove switch time from list
+     */
     public void nop() {
         this.updateOutput("COMMAND: Nop\n");
         if (!(this.getSwitchlist().size() == 0)) {
@@ -399,7 +401,10 @@ public class Home {
         }
     }
 
-
+    /**
+     * skip minutes basically advance the system times and if there are a switch time it does switch operations
+     * @param args commands as a string array
+     */
     public void skipMinutes(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
@@ -418,6 +423,10 @@ public class Home {
         }
     }
 
+    /**
+     * set time to a later time and do switch operations if needed
+     * @param args Command parameters as a string array
+     */
     public void setTime(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
@@ -442,6 +451,10 @@ public class Home {
 
     }
 
+    /**
+     * set switch time for device and if setted switch time is not in switch list
+     * @param args
+     */
     public void setSwitchTime(String[] args) {
         this.updateOutput("COMMAND: SetSwitchTime\t" + args[1] + "\t" + args[2] + "\n");
         try {
@@ -452,10 +465,13 @@ public class Home {
             String timeString = args[2];
             Device device = findDevices(name);
             LocalDateTime TimeOfSwitch = TimeControl.TimeFormatter(timeString);
+            if (TimeOfSwitch.isBefore(this.getCurrentTime())){
+                throw new Erroneous();
+            }
             device.setSwitchTime(TimeOfSwitch);
             replaceProduct(name, device);
             if (!(this.getSwitchlist().contains(TimeOfSwitch))) {
-                this.getSwitchlist().add(TimeOfSwitch);
+                this.getSwitchlist().add(TimeOfSwitch);//add the switch list if it is not in list
             }
             Collections.sort(this.getSwitchlist());
 
@@ -466,38 +482,41 @@ public class Home {
     }
 
     /**
-     *
+     * This class implements comparator interface to compare object for sorting if two devices switch times are not null
+     * it decides which one to before if one of them nulls it comes after from not-null one.if both of the status null
+     * it checks if they have a last switch time and compare its last switch times to ordering
      */
     private class ProductSwitchTimeComparator implements Comparator<Device> {
         @Override
         public int compare(Device p1, Device p2) {
-            LocalDateTime d1 = p1.getSwitchTime();
-            LocalDateTime d2 = p2.getSwitchTime();
-            LocalDateTime l1 = p1.getLastSwitchTime();
-            LocalDateTime l2 = p2.getLastSwitchTime();
-            if (d1 == null && d2 == null) {
-                if (l1 == null && l2 == null) {
+            LocalDateTime current1 = p1.getSwitchTime();
+            LocalDateTime current2 = p2.getSwitchTime();
+            LocalDateTime last1 = p1.getLastSwitchTime();
+            LocalDateTime last2 = p2.getLastSwitchTime();
+            if (current1 == null && current2 == null) {
+                if (last1 == null && last2 == null) {
                     return 0; // both are null, equal
-                } else if (l1 == null) {
+                } else if (last1 == null) {
                     return 1;
-                } else if (l2 == null) {
+                } else if (last2 == null) {
                     return -1;
                 } else {
-                    return l2.compareTo(l1);
+                    return last2.compareTo(last1);
                 }
-            } else if (d1 == null) {
-                return 1; // e1 is null, e2 is not null, e2 comes first
-            } else if (d2 == null) {
-                return -1; // e1 is not null, e2 is null, e1 comes first
+            } else if (current1 == null) {
+                return 1; // current1 is null, current2 is not null, current2 comes first
+            } else if (current2 == null) {
+                return -1; // current1 is not null, current2 is null, current1 comes first
             } else {
-                return d1.compareTo(d2); // both are not null, compare their values in reverse order
+                return current1.compareTo(current2); // both are not null, compare their values in reverse order
             }
         }
     }
 
     /**
-     *
-     * @param lastReport
+     * zReport methods sort the device list with ProductSwitchTimeComparator and
+     * call all devices info methods to add output
+     * @param lastReport last report boolean value change the output for output call
      */
     public void zReport(boolean lastReport) {
 
@@ -515,8 +534,8 @@ public class Home {
     }
 
     /**
-     *
-     * @param args
+     * Remove device method remove device from device list but it switch of before removing
+     * @param args the line command provided in .txt file
      */
     public void removeDevice(String[] args) {
         this.updateOutput("COMMAND: Remove\t" + args[1] + "\n");
@@ -527,11 +546,11 @@ public class Home {
 
                 if (device.getStatus().equals("On")) {
                     if (device instanceof Lamp) {
-                        device.switchDevice("Off");
+                        device.switchDevice("Off");//switch off the device and removes it from system
                         replaceProduct(name, device);
                     } else {
                         ConsumerDevice consumerDeviceDevice = (ConsumerDevice) device;
-                        consumerDeviceDevice.switchDevice(this.getCurrentTime(), "Off");
+                        consumerDeviceDevice.switchDevice(this.getCurrentTime(), "Off");// switch off before closing
                         replaceProduct(name, (Device) consumerDeviceDevice);
                     }
                 }
@@ -582,9 +601,9 @@ public class Home {
     }
 
     /**
-     *
-     * @param name
-     * @return
+     * find devices methods loop through the device list and find the device and returns it
+     * @param name the device object name that will be looked in device list
+     * @return device object
      * @throws Custom
      */
     private Device findDevices(String name) throws Custom {
@@ -598,9 +617,9 @@ public class Home {
     }
 
     /**
-     *
-     * @param name
-     * @return
+     * checks the name parameter exist in an object in the device list
+     * @param name name of the device that will be looked
+     * @return boolean value about existence of object
      */
     private boolean checkDevices(String name) {
         for (Device p : this.getDeviceList()) {
@@ -612,10 +631,10 @@ public class Home {
     }
 
     /**
-     *
-     * @param name
-     * @param newDevice
-     * @throws NotFound
+     * change the device object without affecting the order
+     * @param name name of the device that will be changed
+     * @param newDevice new device object
+     * @throws NotFound if there are not device with the name provided in the device list it will give an error
      */
     private void replaceProduct(String name, Device newDevice) throws NotFound {
         int index = -1;
@@ -651,14 +670,6 @@ public class Home {
 
 
 }
-
-
-
-
-
-
-
-
 
 
 
