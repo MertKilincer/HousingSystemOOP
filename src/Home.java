@@ -3,16 +3,22 @@ import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * Home class contains the systems methods and data structures
+ */
 public class Home {
 
-    private TimeControl factoryTime;
+    private TimeControl homeTime;//system time
+    private LinkedList<Device> deviceList = new LinkedList<>();//device list
+    private String output = new String();//output
+    private ArrayList<LocalDateTime> switchlist = new ArrayList<>();//Switch time are holded here
 
-    private LinkedList<Device> deviceList = new LinkedList<>();
-    private String output = new String();
-    private ArrayList<LocalDateTime> switchlist = new ArrayList<>();
-
-    public void setFactoryTime(String timeString) {
-        this.factoryTime = new TimeControl(timeString);
+    /**
+     * Method set InıtialTime to system
+     * @param timeString string format date
+     */
+    public void setHomeTime(String timeString) {
+        this.homeTime = new TimeControl(timeString);
         this.updateOutput("COMMAND: SetInitialTime\t" + timeString +
                 "\nSUCCESS: Time has been set to " + timeString + "!\n");
     }
@@ -31,17 +37,22 @@ public class Home {
     }
 
     private LocalDateTime getCurrentTime() {
-        return factoryTime.getTime();
+        return homeTime.getTime();
     }
 
     private TimeControl getTimeControl() {
-        return this.factoryTime;
+        return this.homeTime;
     }
 
     private ArrayList<LocalDateTime> getSwitchlist() {
         return this.switchlist;
     }
 
+    /**
+     * add method uses other get device method to call them and add to the device list
+     * if they are not have a device with same name.
+     * @param input Command line  provided in .txt as a String array
+     */
     public void add(String[] input) {
         this.updateOutput("COMMAND: " + String.join("\t", input) + "\n");
         Device device = null;
@@ -71,7 +82,12 @@ public class Home {
             this.updateOutput(e.getMessage());
         }
     }
-
+    /**
+     * Method creates Plug to its argument length
+     * @param args Command line provided in .txt file
+     * @return Plug object to add system
+     * @throws Custom exceptions thrown in this
+     */
     private Plug getPlug(String[] args) throws Custom {
 
         if (args.length == 3) {
@@ -79,23 +95,33 @@ public class Home {
         } else if (args.length == 4) {
             return new Plug(args[2], args[3]);
         } else if (args.length == 5) {
-            return new Plug(args[2], args[3], Double.parseDouble(args[4]), this.getCurrentTime());
+            return new Plug(args[2], args[3], Double.parseDouble(args[4]), this.getCurrentTime());//uses system time
         } else {
             throw new Erroneous();
         }
     }
-
+    /**
+     * Method creates Camera to its argument length
+     * @param args Command line provided in .txt file
+     * @return Camera object to add system
+     * @throws Custom exceptions thrown in this
+     */
     private Camera getCamera(String[] args) throws Custom {
 
         if (args.length == 4) {
             return new Camera(args[2], Double.parseDouble(args[3]));
         } else if (args.length == 5) {
-            return new Camera(args[2], Double.parseDouble(args[3]), args[4], this.getCurrentTime());
+            return new Camera(args[2], Double.parseDouble(args[3]), args[4], this.getCurrentTime());//uses system time
         } else {
             throw new Erroneous();
         }
     }
-
+    /**
+     * Method creates lamp to its argument length
+     * @param args Command line provided in .txt file
+     * @return Lamp object to add system
+     * @throws Custom exceptions thrown in this
+     */
     private static Lamp getLamp(String[] args) throws Custom {
         if (args.length == 3) {
             return new Lamp(args[2]);
@@ -109,6 +135,12 @@ public class Home {
         }
     }
 
+    /**
+     * Method creates Color lamp to its argument length
+     * @param args Command line provided in .txt file
+     * @return ColorLamp object to add system
+     * @throws Custom exceptions thrown in this
+     */
     private static ColorLamp getColorLamp(String[] args) throws Custom {
         if (args.length == 3) {
             return new ColorLamp(args[2]);
@@ -122,6 +154,11 @@ public class Home {
         }
     }
 
+    /**
+     * plugIn method insert a device into a plug and change its ampere field.ıt does not change main device in the list
+     * it retrieves device value change it in function and replace the device in deviceList
+     * @param args string array that methods use as a command parameter
+     */
     public void plugIn(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
@@ -131,10 +168,12 @@ public class Home {
             String name = args[1];
             double Ampere = Double.parseDouble(args[2]);
             Device device = findDevices(name);
-            Plug plug = (Plug) device;
+            Plug plug = (Plug) device;//down-casting for device to call method
             plug.PlugIn(Ampere, this.getCurrentTime());
             replaceProduct(name, plug);
-
+            /**
+             * Belows are error that thrown in plugIn function
+             */
         } catch (NullPointerException e) {
             this.updateOutput("null");
         } catch (NumberFormatException e) {
@@ -146,6 +185,10 @@ public class Home {
         }
     }
 
+    /**
+     * plugOut method that remove devices from plug
+     * @param args string array that methods use as a command parameter
+     */
     public void plugOut(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
@@ -155,10 +198,9 @@ public class Home {
             String name = args[1];
             Device device = findDevices(name);
             Plug temp = (Plug) device;
-            temp.PlugOff(this.getCurrentTime());
+            temp.PlugOff(this.getCurrentTime());//uses time to calculate consumption
             replaceProduct(name, temp);
 
-        } catch (NullPointerException e) {
         } catch (Custom e) {
             this.updateOutput(e.getMessage());
         } catch (ClassCastException e) {
@@ -283,6 +325,12 @@ public class Home {
         }
     }
 
+    /**
+     * Switch the device statuses to given status to given status in the arguments.
+     * This command behaves differently for object type if device is a lamp it calls the method directly.if it is not
+     * it cast to device object to ConsumerDevice interface and call the methods.
+     * @param args
+     */
     public void switchCommand(String[] args) {
         this.updateOutput("COMMAND: " + String.join("\t", args) + "\n");
         try {
@@ -301,8 +349,6 @@ public class Home {
                 replaceProduct(name, (Device) consumerDeviceDevice);
             }
 
-
-        } catch (NullPointerException e) {
 
         } catch (Custom e) {
             this.updateOutput(e.getMessage());
@@ -323,6 +369,10 @@ public class Home {
         }
     }
 
+    /**
+     *
+     * @param switchTime
+     */
     private void nopDoSwitch(LocalDateTime switchTime) {
         for (Device p : this.getDeviceList()) {
             try {
@@ -415,13 +465,16 @@ public class Home {
 
     }
 
+    /**
+     *
+     */
     private class ProductSwitchTimeComparator implements Comparator<Device> {
         @Override
         public int compare(Device p1, Device p2) {
             LocalDateTime d1 = p1.getSwitchTime();
             LocalDateTime d2 = p2.getSwitchTime();
-            LocalDateTime l1 = p1.getLastswitchtime();
-            LocalDateTime l2 = p2.getLastswitchtime();
+            LocalDateTime l1 = p1.getLastSwitchTime();
+            LocalDateTime l2 = p2.getLastSwitchTime();
             if (d1 == null && d2 == null) {
                 if (l1 == null && l2 == null) {
                     return 0; // both are null, equal
@@ -442,6 +495,10 @@ public class Home {
         }
     }
 
+    /**
+     *
+     * @param lastReport
+     */
     public void zReport(boolean lastReport) {
 
         if (lastReport) {
@@ -457,7 +514,10 @@ public class Home {
 
     }
 
-
+    /**
+     *
+     * @param args
+     */
     public void removeDevice(String[] args) {
         this.updateOutput("COMMAND: Remove\t" + args[1] + "\n");
         try {
@@ -521,7 +581,12 @@ public class Home {
         }
     }
 
-
+    /**
+     *
+     * @param name
+     * @return
+     * @throws Custom
+     */
     private Device findDevices(String name) throws Custom {
 
         for (Device p : this.getDeviceList()) {
@@ -532,7 +597,11 @@ public class Home {
         throw new NotFound();
     }
 
-
+    /**
+     *
+     * @param name
+     * @return
+     */
     private boolean checkDevices(String name) {
         for (Device p : this.getDeviceList()) {
             if (p.getName().equals(name)) {
@@ -542,7 +611,12 @@ public class Home {
         return false;
     }
 
-
+    /**
+     *
+     * @param name
+     * @param newDevice
+     * @throws NotFound
+     */
     private void replaceProduct(String name, Device newDevice) throws NotFound {
         int index = -1;
         for (int i = 0; i < this.getDeviceList().size(); i++) {

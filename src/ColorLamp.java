@@ -72,7 +72,7 @@ public class ColorLamp extends Lamp {
 
     public void setColor(String colorCode, int brightness) throws Custom {
         checkColorCode(colorCode);
-        checkBrigtness(brightness);
+        checkBrightness(brightness);
         colorAssigner(colorCode);
         super.setBrightness(brightness);
         this.ColorMode = true;

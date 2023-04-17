@@ -1,9 +1,23 @@
 import java.time.LocalDateTime;
 
+/**
+ * Lamp class is the subclass of the Device class.
+ * <li>it has two extra fields.</li>
+ * <li>Lamp accepts kelvin value  for kelvin field and default value is 4000</li>
+ * <li>Lamp accepts brightness value for brightness field and default value is 100</li>
+ *
+ */
 public class Lamp extends Device {
+    /**
+     *  it is in range of between 2000 and 6500
+     */
 
     private int kelvin;
+    /**
+     *  it is in range of between 0 and 100
+     */
     private int brightness;
+
 
     public Lamp(String name) {
 
@@ -17,6 +31,7 @@ public class Lamp extends Device {
         brightness=100;
         kelvin=4000;
     }
+
     public Lamp (String name, String status,int kelvin,int brightness) throws Custom {
         super(name, status);
         this.setKelvin(kelvin);
@@ -27,27 +42,41 @@ public class Lamp extends Device {
         super();
     }
 
-
     public void setBrightness(int brightness) throws Custom {
-        checkBrigtness(brightness);
+        checkBrightness(brightness);
         this.brightness = brightness;
-        }
+    }
 
+    public void setKelvin(int kelvin) throws Custom{
+        checkKelvin(kelvin);
+        this.kelvin=kelvin;
+    }
 
-    public static void checkBrigtness(int brightness) throws Custom{
+    /**
+     * Checks the range of the brightness value
+     * @param brightness
+     * @throws Custom RangeError subclass of the custom is thrown.
+     */
+    public static void checkBrightness(int brightness) throws RangeError{
         if (brightness<0 ||brightness>100){
             throw new RangeError("ERROR: Brightness ", "0%-100%!\n");
         }
     }
-
-    public void setKelvin(int kelvin) throws Custom{
-        if (kelvin>=2000 && kelvin<=6500){
-            this.kelvin=kelvin;
-        }else{
+    /**
+     * Checks the range of the kelvin value
+     * @param kelvin
+     * @throws Custom RangeError subclass of the custom is thrown.
+     */
+    public static void checkKelvin(int kelvin) throws RangeError {
+        if (kelvin<2000 || kelvin>6500){
             throw new RangeError("ERROR: Kelvin value ","2000K-6500K!\n");
         }
     }
+
+
     public void setWhite(int kelvin,int brightness) throws Custom {
+        checkKelvin(kelvin);
+        checkBrightness(brightness);
         setKelvin(kelvin);
         setBrightness(brightness);
     }
@@ -60,6 +89,11 @@ public class Lamp extends Device {
         return brightness;
     }
 
+    /**
+     * Change the device current status to the different one
+     * @param time
+     * @throws Custom
+     */
     @Override
     public void nopSwitch(LocalDateTime time) throws Custom {
         if (super.getStatus().equals("Off")) {
@@ -69,6 +103,9 @@ public class Lamp extends Device {
             }
         }
 
+    /**
+     * @return Information of the device returns as a string
+     */
     @Override
     public String info() {
         return "Smart Lamp " + super.getName() + " is " + super.getStatus().toLowerCase() +
